@@ -849,6 +849,44 @@ async function downloadAllMedia() {
     }
 }
 
+// ===== Service worker & updates =====
+function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    window.addEventListener('load', async () => {
+        try {
+            const registration = await navigator.serviceWorker.register('./sw.js');
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                if (!newWorker) return;
+                newWorker.addEventListener('statechange', () => {
+                    // 'installed' with an active controller = an update is waiting
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        showUpdateToast(newWorker);
+                    }
+                });
+            });
+            let reloading = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (reloading) return;
+                reloading = true;
+                window.location.reload();
+            });
+        } catch (e) {
+            console.error('Service worker registration failed:', e);
+        }
+    });
+}
+
+function showUpdateToast(worker) {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast update-toast show';
+    toast.textContent = 'Update available — tap to reload';
+    toast.addEventListener('click', () => worker.postMessage({ type: 'SKIP_WAITING' }));
+    document.body.appendChild(toast);
+}
+
 // ===== Settings modal =====
 function openSettings() {
     renderStorageStatus();
@@ -1397,3 +1435,4 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+registerServiceWorker();

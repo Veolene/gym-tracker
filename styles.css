@@ -1207,6 +1207,12 @@ body {
     background: var(--success);
 }
 
+.toast.update-toast {
+    background: var(--primary);
+    color: white;
+    cursor: pointer;
+}
+
 /* ===== Responsive Adjustments ===== */
 @media (min-width: 600px) {
     .day-selector {
