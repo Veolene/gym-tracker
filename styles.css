@@ -64,9 +64,37 @@ body {
 .header {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     padding: 16px 20px;
+    padding-top: calc(16px + env(safe-area-inset-top));
     position: sticky;
     top: 0;
     z-index: 100;
+}
+
+.btn-settings {
+    position: absolute;
+    top: calc(14px + env(safe-area-inset-top));
+    right: 16px;
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-settings svg {
+    width: 22px;
+    height: 22px;
+}
+
+.btn-settings:active {
+    transform: scale(0.95);
+    background: rgba(255,255,255,0.3);
 }
 
 .header h1 {
@@ -1103,6 +1131,53 @@ body {
 .btn-primary:active {
     background: var(--primary-dark);
     transform: scale(0.98);
+}
+
+.btn-secondary {
+    width: 100%;
+    padding: 16px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:active {
+    background: var(--border);
+    transform: scale(0.98);
+}
+
+/* ===== Settings Modal ===== */
+.settings-section {
+    margin-bottom: 24px;
+}
+
+.settings-section h4 {
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.settings-desc {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.settings-section .btn-primary,
+.settings-section .btn-secondary {
+    margin-bottom: 10px;
+}
+
+.settings-status {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-top: 6px;
 }
 
 /* ===== Toast Notification ===== */

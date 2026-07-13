@@ -13,6 +13,9 @@
     <div id="app">
         <!-- Header -->
         <header class="header">
+            <button id="settings-btn" class="btn-settings" aria-label="Settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </button>
             <h1>Gym Tracker</h1>
             <div class="week-selector">
                 <button id="prevWeek" class="btn-nav">◀</button>
@@ -266,6 +269,35 @@
             </div>
             <div class="modal-footer">
                 <button id="save-set" class="btn-primary">Save Set</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Settings</h3>
+                <button class="close-modal" id="close-settings">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h4>Backup</h4>
+                    <p class="settings-desc">All data lives on this device. Export a backup now and then so nothing is ever lost.</p>
+                    <button id="export-data" class="btn-primary">Export data</button>
+                    <button id="import-data" class="btn-secondary">Import data</button>
+                    <input type="file" id="import-file" accept=".json,application/json" hidden>
+                </div>
+                <div class="settings-section">
+                    <h4>Offline media</h4>
+                    <p class="settings-desc">Save all exercise animations to this device so they show without internet. Best done on Wi-Fi (~40 MB).</p>
+                    <button id="download-media" class="btn-secondary">Download all exercise media</button>
+                    <div id="media-progress" class="settings-status"></div>
+                </div>
+                <div class="settings-section">
+                    <div id="storage-status" class="settings-status"></div>
+                    <div class="settings-status">Version <span id="app-version"></span></div>
+                </div>
             </div>
         </div>
     </div>

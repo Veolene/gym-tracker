@@ -714,6 +714,7 @@ function getExercisesForWeek(week, session) {
 
 // ===== State Management =====
 const APP_VERSION = '2.0.0';
+const GIF_CACHE = 'gif-cache-v1'; // must match sw.js
 const STORAGE_KEY = 'nippardEssentials5x_12weeks_v1';
 const defaultState = {
     currentWeek: 1,
@@ -752,6 +753,110 @@ function saveState() {
 // Weight 0 means a bodyweight set (e.g. push-ups to failure)
 function formatSet(weight, reps) {
     return weight === 0 ? `BW x ${reps}` : `${weight}kg x ${reps}`;
+}
+
+// ===== Backup: Export / Import =====
+function exportData(filenamePrefix = 'gym-tracker-backup') {
+    const date = new Date().toISOString().slice(0, 10);
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filenamePrefix}-${date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function importData(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+        try {
+            const parsed = JSON.parse(reader.result);
+            const valid = parsed && typeof parsed === 'object'
+                && parsed.workoutData && typeof parsed.workoutData === 'object'
+                && Object.keys(parsed.workoutData).every(k => /^w\d+_s\d+_/.test(k));
+            if (!valid) {
+                showToast('Not a valid backup file');
+                return;
+            }
+            // Don't let a bad import silently destroy current data
+            const hasLoggedSets = Object.values(state.workoutData).some(d => d.sets && d.sets.length > 0);
+            if (hasLoggedSets) exportData('gym-tracker-pre-import');
+            state = normalizeState(parsed);
+            saveState();
+            renderWeekDisplay();
+            renderExercises();
+            renderProgress();
+            closeSettings();
+            showToast('Data imported');
+        } catch (e) {
+            showToast('Could not read backup file');
+        }
+    };
+    reader.readAsText(file);
+}
+
+// ===== Persistent Storage =====
+function requestPersistentStorage() {
+    if (navigator.storage?.persist) {
+        navigator.storage.persist().catch(() => {});
+    }
+}
+
+async function renderStorageStatus() {
+    const el = document.getElementById('storage-status');
+    if (!el || !navigator.storage?.persisted) return;
+    try {
+        const persisted = await navigator.storage.persisted();
+        const est = await navigator.storage.estimate();
+        const usedMb = ((est.usage || 0) / 1048576).toFixed(1);
+        el.textContent = `Storage: ${persisted ? 'protected against cleanup' : 'not yet protected'} · ${usedMb} MB used`;
+    } catch (e) {
+        el.textContent = '';
+    }
+}
+
+// ===== Offline media download =====
+async function downloadAllMedia() {
+    const progressEl = document.getElementById('media-progress');
+    if (!('caches' in window)) {
+        showToast('Offline cache not supported in this browser');
+        return;
+    }
+    const urls = [...new Set(Object.values(exerciseGifs))];
+    urls.push('https://fitnessprogramer.com/wp-content/uploads/2022/02/Foam-Rolling-Quadriceps.gif');
+    const cache = await caches.open(GIF_CACHE);
+    let done = 0, failed = 0;
+    for (const url of urls) {
+        try {
+            const existing = await cache.match(url);
+            if (!existing) {
+                const resp = await fetch(url, { mode: 'no-cors' });
+                await cache.put(url, resp);
+            }
+        } catch (e) {
+            failed++;
+        }
+        done++;
+        if (progressEl) progressEl.textContent = `Downloading… ${done}/${urls.length}`;
+    }
+    if (progressEl) {
+        progressEl.textContent = failed > 0
+            ? `Done, but ${failed} of ${urls.length} failed — retry later`
+            : `All ${urls.length} animations saved for offline use`;
+    }
+}
+
+// ===== Settings modal =====
+function openSettings() {
+    renderStorageStatus();
+    document.getElementById('settings-modal')?.classList.add('active');
+}
+
+function closeSettings() {
+    document.getElementById('settings-modal')?.classList.remove('active');
 }
 
 function getExerciseData(week, session, exerciseName) {
@@ -1242,6 +1347,27 @@ function init() {
 
     const saveBtn = document.getElementById('save-set');
     if (saveBtn) saveBtn.addEventListener('click', saveSet);
+
+    // Settings modal
+    document.getElementById('settings-btn')?.addEventListener('click', openSettings);
+    document.getElementById('close-settings')?.addEventListener('click', closeSettings);
+    const settingsModal = document.getElementById('settings-modal');
+    if (settingsModal) {
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) closeSettings();
+        });
+    }
+    document.getElementById('export-data')?.addEventListener('click', () => exportData());
+    document.getElementById('import-data')?.addEventListener('click', () => document.getElementById('import-file')?.click());
+    document.getElementById('import-file')?.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (file) importData(file);
+        e.target.value = '';
+    });
+    document.getElementById('download-media')?.addEventListener('click', downloadAllMedia);
+    const versionEl = document.getElementById('app-version');
+    if (versionEl) versionEl.textContent = APP_VERSION;
+    requestPersistentStorage();
 
     // Handle +/- buttons for weight and reps inputs
     document.querySelectorAll('.number-input').forEach(container => {
