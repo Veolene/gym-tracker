@@ -1,116 +1,57 @@
-# 💪 Gym Tracker - Bodybuilding Transformation System
+# Gym Tracker
 
-A mobile-friendly workout tracking web app optimized for use at the gym on your phone.
+Installable, offline-first PWA for tracking Jeff Nippard's **Essentials Program 5x/Week** — 12 weeks, 3 blocks (exercises change every 4 weeks), 5 sessions per week (Upper / Lower / Push / Pull / Legs). All weights in kg.
 
 ## Features
 
-- 📱 **Mobile-First Design** - Optimized for Oppo X9 Pro and other smartphones
-- 📊 **Progress Tracking** - See last week's performance and track improvements
-- 💾 **Offline Storage** - All data saved locally in your browser
-- 🏋️ **5-Day Split Program** - Push/Pull/Legs/Upper/Lower routine
-- ⏱️ **Quick Input** - Large touch targets for easy gym use
-- 🔥 **Warm-Up Guide** - Built-in warm-up checklist
-- 💡 **Training Tips** - Progressive overload, form tips, and more
+- **Workout tab** — week selector (1–12), 5 session buttons, exercise cards with animated demos, target sets/reps/rest, technique (RPE / dropset / superset), coaching notes, warm-up set counts, and logged-set pills. Exercises can be swapped to listed substitutions and reverted.
+- **Set logging** — tap a card, log weight x reps with hold-to-repeat steppers, or use the one-tap "Same as last week" button. Weight `0` logs a bodyweight set (shown as `BW x reps`).
+- **Rest timer** — starts automatically after saving a set, based on the exercise's rest target; vibrates and beeps when done. Screen stays awake while the app is open.
+- **Progress tab** — volume, sets, completion rate, best set, and recent history.
+- **Offline** — the whole app works with no connection once installed. Exercise animations show offline after viewing them once, or all at once via *Settings → Download all exercise media*.
 
-## How to Use
+## Install on your phone (Android)
 
-### Option 1: Open Directly
-Simply open `index.html` in your browser. On your phone, you can add it to your home screen for an app-like experience.
+1. Open the app URL in Chrome.
+2. Tap the **Install app** prompt (or ⋮ menu → *Add to Home screen*).
+3. Launch it from the home screen — it runs fullscreen like a native app.
 
-### Option 2: Local Server (for all features)
-Run a simple HTTP server:
+## Your data
 
-**Python 3:**
-```bash
-cd gym-tracker
-python -m http.server 8000
+All data lives **on the device** in localStorage (persistent storage is requested automatically, so the browser won't clean it up).
+
+- **Backup:** Settings (gear icon) → *Export data* — saves a JSON file to Downloads. Do this now and then.
+- **Restore / move devices:** transfer the JSON file to the new device → Settings → *Import data*. Importing auto-exports the current data first, so it can't silently destroy anything.
+
+## Development
+
+No build step — plain HTML/CSS/JS. Serve the folder over HTTP (the service worker needs it):
+
+```
+python -m http.server 8080
 ```
 
-**Python 2:**
-```bash
-cd gym-tracker
-python -m SimpleHTTPServer 8000
-```
+Then open http://localhost:8080.
 
-**Node.js (if you have npx):**
-```bash
-npx serve gym-tracker
-```
+### Releasing an update
 
-Then open `http://localhost:8000` in your browser.
+1. Bump `CACHE_VERSION` in `sw.js` and `APP_VERSION` in `app.js` (keep them in sync).
+2. Commit and push to `main` — GitHub Pages redeploys automatically (~1 min).
+3. On the phone, reopen the app: an "Update available — tap to reload" toast appears once the new version has downloaded (or it activates on the next launch).
 
-## Workout Program
+### Files
 
-### Day 1 - Push
-- Barbell Bench Press (4×6-8)
-- Incline Dumbbell Press (3×8-10)
-- Overhead Press (3×8-10)
-- Lateral Raises (3×12-15)
-- Tricep Pushdowns (3×10-12)
-- Overhead Tricep Extension (2×12-15)
+| File | Purpose |
+|---|---|
+| `index.html` | App shell: header, tabs, modals, rest-timer bar |
+| `app.js` | Program data (3 blocks), state, rendering, logging, settings, SW registration |
+| `styles.css` | Dark theme, responsive layout |
+| `sw.js` | Service worker: app-shell precache + runtime GIF cache |
+| `manifest.json` | PWA manifest (installability) |
+| `icons/` | Launcher icons |
+| `audit.js` | Dev-only: checks every exercise has a GIF mapping (`node audit.js`) |
 
-### Day 2 - Pull
-- Conventional Deadlift (4×5-6)
-- Barbell Rows (4×6-8)
-- Lat Pulldowns (3×8-10)
-- Face Pulls (3×15-20)
-- Barbell Curls (3×8-10)
-- Hammer Curls (2×10-12)
+### Notes
 
-### Day 3 - Legs
-- Barbell Back Squat (4×6-8)
-- Romanian Deadlift (3×8-10)
-- Leg Press (3×10-12)
-- Lying Leg Curls (3×10-12)
-- Leg Extensions (3×12-15)
-- Standing Calf Raises (4×12-15)
-
-### Day 4 - Upper Body
-- Incline Barbell Press (4×6-8)
-- Seated Cable Rows (4×8-10)
-- Dumbbell Shoulder Press (3×8-10)
-- Cable Chest Flyes (3×12-15)
-- Rear Delt Flyes (3×15-20)
-- Tricep Dips (3×8-12)
-
-### Day 5 - Lower Body
-- Front Squat (4×6-8)
-- Sumo Deadlift (3×6-8)
-- Walking Lunges (3×10 each)
-- Hip Thrusts (3×10-12)
-- Seated Leg Curls (3×12-15)
-- Seated Calf Raises (4×15-20)
-
-## Progressive Overload
-
-The app shows your previous week's performance so you can aim to:
-- Add 2.5-5 lbs to the bar, OR
-- Add 1-2 extra reps
-
-Small consistent progress = BIG gains over time!
-
-## Tips for Best Results
-
-1. **Complete the warm-up** before each session
-2. **Log every set** immediately after completing it
-3. **Check last week's numbers** before each exercise
-4. **Rest appropriately:**
-   - Compound exercises: 2-3 minutes
-   - Isolation exercises: 60-90 seconds
-5. **Stay consistent** - Progress takes time!
-
-## Browser Support
-
-Works on all modern browsers including:
-- Chrome (Android/iOS)
-- Safari (iOS)
-- Firefox
-- Edge
-
-## Data Storage
-
-All your workout data is stored locally in your browser's localStorage. To backup your data, you can export it from the browser's developer tools.
-
----
-
-Built with ❤️ for gainz! 💪
+- Exercise animations are hot-linked from fitnessprogramer.com and cached on-device at runtime only — they are not redistributed in this repo.
+- `progress.json` (personal workout data from the old server-sync setup) is gitignored; it can be loaded via Settings → Import data.
