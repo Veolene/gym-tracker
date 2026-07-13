@@ -956,6 +956,7 @@ body {
     max-width: 500px;
     border-radius: 24px 24px 0 0;
     padding: 24px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
     animation: slideUp 0.3s ease;
     max-height: 85vh;
     overflow-y: auto;
@@ -1180,10 +1181,79 @@ body {
     margin-top: 6px;
 }
 
+/* ===== Rest Timer Bar ===== */
+.rest-timer {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    z-index: 250;
+}
+
+.rest-timer.active {
+    display: flex;
+}
+
+.rest-timer-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.rest-timer-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+
+.rest-timer-label {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rest-timer-time {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.rest-timer-skip {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Landing point for the auto-scroll under the sticky header */
+.exercise-card {
+    scroll-margin-top: 130px;
+}
+
+.number-input button {
+    touch-action: none;
+}
+
 /* ===== Toast Notification ===== */
 .toast {
     position: fixed;
-    bottom: 100px;
+    bottom: calc(100px + env(safe-area-inset-bottom));
     left: 50%;
     transform: translateX(-50%) translateY(100px);
     background: var(--bg-card);

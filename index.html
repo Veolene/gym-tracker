@@ -252,7 +252,7 @@
                         <label>Weight (kg)</label>
                         <div class="number-input">
                             <button class="minus">-</button>
-                            <input type="number" id="weight-input" value="0" min="0" step="2.5">
+                            <input type="number" id="weight-input" value="0" min="0" step="2.5" inputmode="decimal">
                             <button class="plus">+</button>
                         </div>
                     </div>
@@ -260,7 +260,7 @@
                         <label>Reps</label>
                         <div class="number-input">
                             <button class="minus">-</button>
-                            <input type="number" id="reps-input" value="0" min="0">
+                            <input type="number" id="reps-input" value="0" min="0" inputmode="numeric">
                             <button class="plus">+</button>
                         </div>
                     </div>
@@ -270,9 +270,20 @@
                 </div>
             </div>
             <div class="modal-footer">
+                <button id="repeat-set" class="btn-secondary" style="display:none"></button>
                 <button id="save-set" class="btn-primary">Save Set</button>
             </div>
         </div>
+    </div>
+
+    <!-- Rest Timer Bar -->
+    <div id="rest-timer" class="rest-timer">
+        <div class="rest-timer-info">
+            <span class="rest-timer-title">Rest</span>
+            <span id="rest-timer-label" class="rest-timer-label"></span>
+        </div>
+        <span id="rest-timer-time" class="rest-timer-time">0:00</span>
+        <button id="rest-timer-skip" class="rest-timer-skip">Skip</button>
     </div>
 
     <!-- Settings Modal -->

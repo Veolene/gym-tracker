@@ -755,6 +755,13 @@ function formatSet(weight, reps) {
     return weight === 0 ? `BW x ${reps}` : `${weight}kg x ${reps}`;
 }
 
+// Last week's same set index, falling back to last week's heaviest set
+function getLastWeekSetFor(lastWeekData, setIndex) {
+    if (!lastWeekData?.sets?.length) return null;
+    return lastWeekData.sets[setIndex]
+        || lastWeekData.sets.reduce((max, s) => (s.weight > max.weight) ? s : max, lastWeekData.sets[0]);
+}
+
 // ===== Backup: Export / Import =====
 function exportData(filenamePrefix = 'gym-tracker-backup') {
     const date = new Date().toISOString().slice(0, 10);
@@ -847,6 +854,69 @@ async function downloadAllMedia() {
             ? `Done, but ${failed} of ${urls.length} failed — retry later`
             : `All ${urls.length} animations saved for offline use`;
     }
+}
+
+// ===== Rest Timer =====
+const restTimer = { endTime: 0, intervalId: null };
+
+function parseRestSeconds(restStr) {
+    const m = /([\d.]+)\s*min/.exec(restStr || '');
+    if (!m) return 0;
+    return Math.round(parseFloat(m[1]) * 60);
+}
+
+function startRestTimer(seconds, label) {
+    if (seconds <= 0) return;
+    stopRestTimer();
+    restTimer.endTime = Date.now() + seconds * 1000;
+    const labelEl = document.getElementById('rest-timer-label');
+    if (labelEl) labelEl.textContent = label || '';
+    document.getElementById('rest-timer')?.classList.add('active');
+    updateRestTimer();
+    // Anchored to endTime, so throttled intervals can't drift the countdown
+    restTimer.intervalId = setInterval(updateRestTimer, 250);
+}
+
+function updateRestTimer() {
+    const remaining = Math.max(0, Math.ceil((restTimer.endTime - Date.now()) / 1000));
+    const timeEl = document.getElementById('rest-timer-time');
+    if (timeEl) timeEl.textContent = `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}`;
+    if (remaining <= 0) {
+        stopRestTimer();
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        playBeep();
+        showToast('Rest over — next set!');
+    }
+}
+
+function stopRestTimer() {
+    if (restTimer.intervalId) clearInterval(restTimer.intervalId);
+    restTimer.intervalId = null;
+    document.getElementById('rest-timer')?.classList.remove('active');
+}
+
+function playBeep() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 880;
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.5);
+        osc.onended = () => ctx.close();
+    } catch (e) { /* audio unavailable — vibration and toast still fire */ }
+}
+
+// ===== Screen Wake Lock =====
+async function acquireWakeLock() {
+    if (!('wakeLock' in navigator)) return;
+    try {
+        await navigator.wakeLock.request('screen');
+    } catch (e) { /* denied or unsupported — not critical */ }
 }
 
 // ===== Service worker & updates =====
@@ -1155,9 +1225,9 @@ function openExerciseModal(exerciseIndex) {
         const lastSets = lastWeekData.sets.map((s, i) => `S${i+1}: ${formatSet(s.weight, s.reps)}`).join(' | ');
         elements.lastWeekInfo.innerHTML = `<h4>Last Week</h4><div class="values">${lastSets}</div>`;
         elements.lastWeekInfo.style.display = 'block';
-        const best = lastWeekData.sets.reduce((max, s) => (s.weight > max.weight) ? s : max, lastWeekData.sets[0]);
-        if (elements.weightInput) elements.weightInput.value = best.weight;
-        if (elements.repsInput) elements.repsInput.value = defaultReps;
+        const prefill = getLastWeekSetFor(lastWeekData, currentData.sets?.length || 0);
+        if (elements.weightInput) elements.weightInput.value = prefill.weight;
+        if (elements.repsInput) elements.repsInput.value = prefill.reps || defaultReps;
     } else {
         if (elements.lastWeekInfo) elements.lastWeekInfo.style.display = 'none';
         if (elements.weightInput) elements.weightInput.value = 0;
@@ -1186,6 +1256,25 @@ function openExerciseModal(exerciseIndex) {
 
     if (elements.setButtons) elements.setButtons.innerHTML = setBtnsHtml;
 
+    const repeatBtn = document.getElementById('repeat-set');
+    const updateRepeatBtn = () => {
+        if (!repeatBtn) return;
+        const target = getLastWeekSetFor(lastWeekData, state.currentSetIndex);
+        const alreadyLogged = currentData.sets?.[state.currentSetIndex];
+        if (target && !alreadyLogged) {
+            repeatBtn.style.display = 'block';
+            repeatBtn.textContent = `↻ Same as last week — ${formatSet(target.weight, target.reps)}`;
+            repeatBtn.onclick = () => {
+                if (elements.weightInput) elements.weightInput.value = target.weight;
+                if (elements.repsInput) elements.repsInput.value = target.reps;
+                saveSet();
+            };
+        } else {
+            repeatBtn.style.display = 'none';
+            repeatBtn.onclick = null;
+        }
+    };
+
     document.querySelectorAll('.set-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             state.currentSetIndex = parseInt(btn.dataset.set);
@@ -1196,10 +1285,12 @@ function openExerciseModal(exerciseIndex) {
                 if (elements.weightInput) elements.weightInput.value = setData.weight;
                 if (elements.repsInput) elements.repsInput.value = setData.reps;
             }
+            updateRepeatBtn();
         });
     });
 
     state.currentSetIndex = currentData.sets?.length || 0;
+    updateRepeatBtn();
     if (elements.modal) elements.modal.classList.add('active');
 }
 
@@ -1218,6 +1309,9 @@ function saveSet() {
         return;
     }
 
+    const restSeconds = parseRestSeconds(state.currentExercise.rest);
+    const restLabel = state.currentExercise.displayName || state.currentExercise.name;
+
     const currentData = getExerciseData(state.currentWeek, state.currentSession, state.currentExercise.name);
     if (!currentData.sets) currentData.sets = [];
     currentData.sets[state.currentSetIndex] = { weight, reps };
@@ -1225,6 +1319,7 @@ function saveSet() {
 
     showToast(`Set ${state.currentSetIndex + 1} saved: ${formatSet(weight, reps)}`);
     closeModal();
+    startRestTimer(restSeconds, restLabel);
     renderExercises();
 }
 
@@ -1360,6 +1455,8 @@ function init() {
             saveState();
             updateSessionButtons();
             renderExercises();
+            document.querySelector('.exercise-card:not(.completed)')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
     });
 
@@ -1407,27 +1504,47 @@ function init() {
     if (versionEl) versionEl.textContent = APP_VERSION;
     requestPersistentStorage();
 
-    // Handle +/- buttons for weight and reps inputs
+    // +/- steppers: tap steps once, holding auto-repeats
+    function bindStepper(btn, input, direction) {
+        let holdTimeout = null;
+        let holdInterval = null;
+        const step = () => {
+            const stepVal = parseFloat(input.step) || 1;
+            const currentVal = parseFloat(input.value) || 0;
+            const next = Math.max(0, currentVal + direction * stepVal);
+            input.value = Math.round(next * 100) / 100;
+        };
+        const stopHold = () => {
+            clearTimeout(holdTimeout);
+            clearInterval(holdInterval);
+            holdTimeout = null;
+            holdInterval = null;
+        };
+        btn.addEventListener('pointerdown', () => {
+            step();
+            holdTimeout = setTimeout(() => {
+                holdInterval = setInterval(step, 100);
+            }, 450);
+        });
+        ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => btn.addEventListener(ev, stopHold));
+        btn.addEventListener('contextmenu', (e) => e.preventDefault());
+    }
+
     document.querySelectorAll('.number-input').forEach(container => {
         const input = container.querySelector('input');
         const minusBtn = container.querySelector('.minus');
         const plusBtn = container.querySelector('.plus');
-        
-        if (minusBtn && input) {
-            minusBtn.addEventListener('click', () => {
-                const step = parseFloat(input.step) || 1;
-                const currentVal = parseFloat(input.value) || 0;
-                input.value = Math.max(0, currentVal - step);
-            });
-        }
-        
-        if (plusBtn && input) {
-            plusBtn.addEventListener('click', () => {
-                const step = parseFloat(input.step) || 1;
-                const currentVal = parseFloat(input.value) || 0;
-                input.value = currentVal + step;
-            });
-        }
+        if (minusBtn && input) bindStepper(minusBtn, input, -1);
+        if (plusBtn && input) bindStepper(plusBtn, input, 1);
+    });
+
+    // Rest timer skip
+    document.getElementById('rest-timer-skip')?.addEventListener('click', stopRestTimer);
+
+    // Keep the screen awake while the app is open (re-acquired on return)
+    acquireWakeLock();
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') acquireWakeLock();
     });
 
     renderWeekDisplay();
