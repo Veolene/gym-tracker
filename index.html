@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Gym Tracker - Essentials 5x Program</title>
+    <link rel="stylesheet" href="styles.css?v=20260206f">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <h1>Gym Tracker</h1>
+            <div class="week-selector">
+                <button id="prevWeek" class="btn-nav">◀</button>
+                <span id="currentWeek">Week 1</span>
+                <button id="nextWeek" class="btn-nav">▶</button>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="tabs">
+            <button class="tab active" data-tab="workout">Workout</button>
+            <button class="tab" data-tab="progress">Progress</button>
+            <button class="tab" data-tab="tips">Tips</button>
+            <button class="tab" data-tab="warmup">Warm-Up</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="content">
+            <!-- Workout Tab -->
+            <section id="workout" class="tab-content active">
+                <!-- Session Selector - 5 Sessions (Upper/Lower Split) -->
+                <div class="session-selector">
+                    <button class="session-btn active" data-session="1">Upper<br><small>#1</small></button>
+                    <button class="session-btn" data-session="2">Lower<br><small>#2</small></button>
+                    <button class="session-btn" data-session="3">Push<br><small>#3</small></button>
+                    <button class="session-btn" data-session="4">Pull<br><small>#4</small></button>
+                    <button class="session-btn" data-session="5">Legs<br><small>#5</small></button>
+                </div>
+
+                <!-- Exercise List -->
+                <div id="exerciseList" class="exercise-list">
+                    <!-- Exercises will be loaded here -->
+                </div>
+            </section>
+
+            <!-- Progress Tab -->
+            <section id="progress" class="tab-content">
+                <div class="progress-summary">
+                    <h2>Weekly Progress</h2>
+                    <div id="progressStats" class="stats-grid">
+                        <!-- Stats loaded dynamically -->
+                    </div>
+                </div>
+                <div id="progressHistory" class="progress-history">
+                    <!-- History loaded dynamically -->
+                </div>
+            </section>
+
+            <!-- Tips Tab -->
+            <section id="tips" class="tab-content">
+                <div class="tips-container">
+                    <div class="tip-card">
+                        <h3>Progressive Overload</h3>
+                        <p>Aim to increase weight by 1-2.5 kg OR add 1-2 reps each week. Small consistent progress leads to big gains!</p>
+                    </div>
+                    <div class="tip-card">
+                        <h3>Rest Between Sets</h3>
+                        <p><strong>Compound exercises:</strong> 2-3 minutes<br>
+                        <strong>Isolation exercises:</strong> 60-90 seconds</p>
+                    </div>
+                    <div class="tip-card">
+                        <h3>Rep Ranges</h3>
+                        <p><strong>Strength:</strong> 4-6 reps<br>
+                        <strong>Hypertrophy:</strong> 8-12 reps<br>
+                        <strong>Endurance:</strong> 15-20 reps</p>
+                    </div>
+                    <div class="tip-card">
+                        <h3>Nutrition Basics</h3>
+                        <p><strong>Protein:</strong> 1.6-2.2g per kg bodyweight<br>
+                        <strong>Water:</strong> 3-4 liters daily<br>
+                        <strong>Sleep:</strong> 7-9 hours</p>
+                    </div>
+                    <div class="tip-card">
+                        <h3>Form Tips</h3>
+                        <p>• Control the negative (lowering) phase<br>
+                        • Full range of motion<br>
+                        • Mind-muscle connection<br>
+                        • Don't ego lift - proper form first!</p>
+                    </div>
+                    <div class="tip-card">
+                        <h3>Signs to Deload</h3>
+                        <p>• Strength decreasing for 2+ weeks<br>
+                        • Feeling constantly fatigued<br>
+                        • Joint pain or discomfort<br>
+                        • Poor sleep quality</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Warm-Up Tab -->
+            <section id="warmup" class="tab-content">
+                <div class="warmup-container">
+                    <h2>Pre-Workout Warm-Up</h2>
+                    
+                    <div class="warmup-section">
+                        <h3>General Warm-Up (5 mins)</h3>
+                        <div class="warmup-exercises">
+                            <div class="warmup-card">
+                                <div class="warmup-info">
+                                    <input type="checkbox" id="wu1"><label for="wu1">Light Cardio - 3 minutes</label>
+                                    <span class="warmup-detail">Bike, treadmill, or jumping jacks</span>
+                                </div>
+                            </div>
+                            <div class="warmup-card">
+                                <div class="warmup-info">
+                                    <input type="checkbox" id="wu2"><label for="wu2">Arm Circles - 20 each direction</label>
+                                    <span class="warmup-detail">Forward and backward</span>
+                                </div>
+                            </div>
+                            <div class="warmup-card">
+                                <div class="warmup-info">
+                                    <input type="checkbox" id="wu3"><label for="wu3">Leg Swings - 15 each leg</label>
+                                    <span class="warmup-detail">Front to back motion</span>
+                                </div>
+                            </div>
+                            <div class="warmup-card">
+                                <div class="warmup-info">
+                                    <input type="checkbox" id="wu4"><label for="wu4">Hip Circles - 10 each direction</label>
+                                    <span class="warmup-detail">Clockwise and counter-clockwise</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="warmup-section">
+                        <h3>Dynamic Stretches</h3>
+                        <div class="warmup-exercises">
+                            <div class="warmup-card">
+                                <div class="warmup-info">
+                                    <input type="checkbox" id="wu5"><label for="wu5">Walking Lunges - 10 each leg</label>
+                                    <span class="warmup-detail">Bodyweight only</span>
+                                </div>
+                            </div>
+                            <div class="warmup-card">
+                                <div class="warmup-info">
+                                    <input type="checkbox" id="wu6"><label for="wu6">High Knees - 20 seconds</label>
+                                    <span class="warmup-detail">Drive knees up high</span>
+                                </div>
+                            </div>
+                            <div class="warmup-card">
+                                <div class="warmup-info">
+                                    <input type="checkbox" id="wu7"><label for="wu7">Butt Kicks - 20 seconds</label>
+                                    <span class="warmup-detail">Heels to glutes</span>
+                                </div>
+                            </div>
+                            <div class="warmup-card">
+                                <div class="warmup-info">
+                                    <input type="checkbox" id="wu8"><label for="wu8">Torso Twists - 15 each side</label>
+                                    <span class="warmup-detail">Rotate through spine</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="warmup-section">
+                        <h3>Exercise-Specific Warm-Up</h3>
+                        <div class="warmup-exercises">
+                            <div class="warmup-card simple">
+                                <div class="warmup-set-icon">50%</div>
+                                <div class="warmup-info">
+                                    <input type="checkbox" id="wu9"><label for="wu9">1 set @ 50% working weight</label>
+                                    <span class="warmup-detail">12 easy reps to get blood flowing</span>
+                                </div>
+                            </div>
+                            <div class="warmup-card simple">
+                                <div class="warmup-set-icon">70%</div>
+                                <div class="warmup-info">
+                                    <input type="checkbox" id="wu10"><label for="wu10">1 set @ 70% working weight</label>
+                                    <span class="warmup-detail">8 reps to prime muscles</span>
+                                </div>
+                            </div>
+                            <div class="warmup-card simple">
+                                <div class="warmup-set-icon">85%</div>
+                                <div class="warmup-info">
+                                    <input type="checkbox" id="wu11"><label for="wu11">1 set @ 85% working weight</label>
+                                    <span class="warmup-detail">4 reps to activate nervous system</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="warmup-section">
+                        <h3>Mobility Work (Optional)</h3>
+                        <div class="warmup-exercises">
+                            <div class="warmup-card">
+                                <div class="warmup-info">
+                                    <input type="checkbox" id="wu12"><label for="wu12">Shoulder Dislocations - 15 reps</label>
+                                    <span class="warmup-detail">Use band or towel</span>
+                                </div>
+                            </div>
+                            <div class="warmup-card">
+                                <div class="warmup-info">
+                                    <input type="checkbox" id="wu13"><label for="wu13">Cat-Cow Stretches - 10 reps</label>
+                                    <span class="warmup-detail">Arch and round spine</span>
+                                </div>
+                            </div>
+                            <div class="warmup-card">
+                                <div class="warmup-info">
+                                    <input type="checkbox" id="wu14"><label for="wu14">Deep Squat Hold - 30 seconds</label>
+                                    <span class="warmup-detail">Sink into bottom position</span>
+                                </div>
+                            </div>
+                            <div class="warmup-card">
+                                <img src="https://fitnessprogramer.com/wp-content/uploads/2022/02/Foam-Rolling-Quadriceps.gif" alt="Foam Rolling" class="warmup-image" loading="lazy">
+                                <div class="warmup-info">
+                                    <input type="checkbox" id="wu15"><label for="wu15">Foam Rolling - 2 mins/muscle</label>
+                                    <span class="warmup-detail">Focus on tight areas</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+    </div>
+
+    <!-- Input Modal -->
+    <div id="input-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-exercise-name" class="selectable">Exercise</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="last-week-info" id="last-week-info">
+                    <!-- Last week's data shown here -->
+                </div>
+                <div class="warmup-info" id="warmup-info"></div>
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label>Weight (kg)</label>
+                        <div class="number-input">
+                            <button class="minus">-</button>
+                            <input type="number" id="weight-input" value="0" min="0" step="2.5">
+                            <button class="plus">+</button>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Reps</label>
+                        <div class="number-input">
+                            <button class="minus">-</button>
+                            <input type="number" id="reps-input" value="0" min="0">
+                            <button class="plus">+</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="set-buttons" id="set-buttons">
+                    <!-- Set buttons dynamically generated -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="save-set" class="btn-primary">Save Set</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js?v=20260206f"></script>
+</body>
+</html>
