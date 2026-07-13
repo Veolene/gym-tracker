@@ -170,16 +170,10 @@ const exerciseGifs = {
     "a2: plate-weighted crunch": "https://fitnessprogramer.com/wp-content/uploads/2021/05/Weighted-Crunch.gif",
     "plate-weighted crunch": "https://fitnessprogramer.com/wp-content/uploads/2021/05/Weighted-Crunch.gif",
     
-    // Additional specific mappings (stripped versions without A1:/A2:)
+    // Stripped versions without A1:/A2: (only names not already defined above)
     "ez bar skull crusher": "https://fitnessprogramer.com/wp-content/uploads/2022/02/Barbell-Reverse-Grip-Skullcrusher-1.gif",
     "ez bar curl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Curl.gif",
-    "standing calf raise": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Standing-Calf-Raise.gif",
-    "seated calf raise": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Lever-Seated-Calf-Raise.gif",
-    "db incline curl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Seated-Incline-Dumbbell-Curl.gif",
-    "roman chair crunch": "https://fitnessprogramer.com/wp-content/uploads/2021/05/Captains-Chair-Leg-Raise.gif",
-    "overhead cable triceps extension": "https://fitnessprogramer.com/wp-content/uploads/2021/04/Cable-Rope-Overhead-Triceps-Extension.gif",
-    "machine crunch": "https://fitnessprogramer.com/wp-content/uploads/2015/11/Crunch.gif",
-    "goblet squat": "https://fitnessprogramer.com/wp-content/uploads/2021/06/kettlebell-goblet-squat.gif"
+    "roman chair crunch": "https://fitnessprogramer.com/wp-content/uploads/2021/05/Captains-Chair-Leg-Raise.gif"
 };
 
 function getExerciseGif(exerciseName) {
@@ -484,18 +478,13 @@ const sessionTypes = {
     5: { name: "Legs", focus: "Leg Focus" }
 };
 
-function isOptionalExercise(exerciseName) {
-    const name = (exerciseName || '').toLowerCase().trim();
-    return name.startsWith('a1:') || name.startsWith('a2:');
-}
-
 function getPhaseInfo(week) {
     if (week <= 4) {
-        return { phase: 1, block: 1, phaseName: "Block 1", blockName: "Weeks 1-4", isDeload: false };
+        return { block: 1, phaseName: "Block 1", blockName: "Weeks 1-4" };
     } else if (week <= 8) {
-        return { phase: 1, block: 2, phaseName: "Block 2", blockName: "Weeks 5-8", isDeload: false };
+        return { block: 2, phaseName: "Block 2", blockName: "Weeks 5-8" };
     } else {
-        return { phase: 1, block: 3, phaseName: "Block 3", blockName: "Weeks 9-12", isDeload: false };
+        return { block: 3, phaseName: "Block 3", blockName: "Weeks 9-12" };
     }
 }
 
@@ -724,8 +713,8 @@ function getExercisesForWeek(week, session) {
 }
 
 // ===== State Management =====
+const APP_VERSION = '2.0.0';
 const STORAGE_KEY = 'nippardEssentials5x_12weeks_v1';
-const SERVER_STATE_URL = '/api/state';
 const defaultState = {
     currentWeek: 1,
     currentSession: 1,
@@ -737,63 +726,32 @@ const defaultState = {
     lastSavedAt: 0
 };
 let state = { ...defaultState };
-let serverSaveTimer = null;
 
 function normalizeState(loaded) {
     if (!loaded || typeof loaded !== 'object') return { ...defaultState };
-    return { ...defaultState, ...loaded };
+    const merged = { ...defaultState, ...loaded };
+    // Transient modal state must never survive a load/import
+    merged.currentExercise = null;
+    merged.currentSetIndex = 0;
+    return merged;
 }
 
-function getSavedAt(source) {
-    return Number(source?.lastSavedAt) || 0;
-}
-
-async function loadState() {
+function loadState() {
     try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) state = normalizeState(JSON.parse(saved));
     } catch (e) { console.error('Error loading local state:', e); }
-
-    try {
-        const response = await fetch(SERVER_STATE_URL, { cache: 'no-store' });
-        if (response.ok) {
-            const serverState = normalizeState(await response.json());
-            if (getSavedAt(serverState) > getSavedAt(state)) {
-                state = serverState;
-            }
-        }
-    } catch (e) {
-        // Server may not be running; ignore silently
-    }
-
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    catch (e) { console.error('Error saving local state:', e); }
-}
-
-function queueServerSave() {
-    if (serverSaveTimer) clearTimeout(serverSaveTimer);
-    serverSaveTimer = setTimeout(() => {
-        saveStateToServer();
-    }, 500);
-}
-
-async function saveStateToServer() {
-    try {
-        await fetch(SERVER_STATE_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(state)
-        });
-    } catch (e) {
-        // Server may not be running; ignore silently
-    }
 }
 
 function saveState() {
     state.lastSavedAt = Date.now();
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
     catch (e) { console.error('Error saving local state:', e); }
-    queueServerSave();
+}
+
+// Weight 0 means a bodyweight set (e.g. push-ups to failure)
+function formatSet(weight, reps) {
+    return weight === 0 ? `BW x ${reps}` : `${weight}kg x ${reps}`;
 }
 
 function getExerciseData(week, session, exerciseName) {
@@ -845,7 +803,7 @@ function renderWeekDisplay() {
     if (!elements.currentWeek) return;
     const info = getPhaseInfo(state.currentWeek);
     elements.currentWeek.innerHTML = `
-        <div class="week-main">Week ${state.currentWeek}/${TOTAL_WEEKS}${info.isDeload ? ' - DELOAD' : ''}</div>
+        <div class="week-main">Week ${state.currentWeek}/${TOTAL_WEEKS}</div>
         <div class="week-sub">${info.phaseName} - ${info.blockName}</div>
     `;
     if (elements.prevWeek) elements.prevWeek.disabled = state.currentWeek <= 1;
@@ -861,7 +819,6 @@ function updateSessionButtons() {
         const exercises = getExercisesForWeek(state.currentWeek, session);
         if (exercises.length > 0) {
             const allCompleted = exercises.every(ex => {
-                if (isOptionalExercise(ex.name)) return true;
                 const data = getExerciseData(state.currentWeek, session, ex.name);
                 return data.sets && data.sets.length >= ex.sets;
             });
@@ -890,7 +847,6 @@ function renderExercises() {
         <div class="day-header">
             <h2>${sessionType.name}</h2>
             <span class="day-focus">${sessionType.focus}</span>
-            ${info.isDeload ? '<span class="deload-badge">INTRO/DELOAD - Lower intensity</span>' : ''}
             <span class="block-badge">${info.phaseName} - ${info.blockName}</span>
         </div>
     `;
@@ -902,7 +858,7 @@ function renderExercises() {
         if (state.currentWeek > 1) {
             const prevWeek = state.currentWeek - 1;
             const prevInfo = getPhaseInfo(prevWeek);
-            if (info.phase === prevInfo.phase && info.block === prevInfo.block) {
+            if (info.block === prevInfo.block) {
                 lastWeekData = getExerciseData(prevWeek, state.currentSession, exercise.name);
             }
         }
@@ -917,7 +873,7 @@ function renderExercises() {
         for (let i = 0; i < targetSets; i++) {
             const setData = currentData.sets?.[i];
             if (setData) {
-                setPillsHtml += `<div class="set-pill completed"><span class="set-number">S${i + 1}</span>${setData.weight}kg x ${setData.reps}</div>`;
+                setPillsHtml += `<div class="set-pill completed"><span class="set-number">S${i + 1}</span>${formatSet(setData.weight, setData.reps)}</div>`;
             } else {
                 setPillsHtml += `<div class="set-pill"><span class="set-number">S${i + 1}</span>--</div>`;
             }
@@ -926,7 +882,7 @@ function renderExercises() {
         let lastWeekHtml = '';
         if (lastWeekData?.sets?.length > 0) {
             const best = lastWeekData.sets.reduce((max, s) => (s.weight > max.weight) ? s : max, lastWeekData.sets[0]);
-            lastWeekHtml = `<div class="last-week-preview">Last week: <strong>${best.weight} kg x ${best.reps} reps</strong></div>`;
+            lastWeekHtml = `<div class="last-week-preview">Last week: <strong>${formatSet(best.weight, best.reps)}</strong></div>`;
         }
 
         // Check for substitution override
@@ -953,7 +909,7 @@ function renderExercises() {
         html += `
             <div class="exercise-card ${isComplete ? 'completed' : ''}${isSubstituted ? ' substituted' : ''}" data-exercise-index="${index}">
                 <div class="exercise-gif">
-                    <img src="${gifUrl}" alt="" loading="lazy" onerror="this.parentElement.style.display='none';">
+                    <img src="${gifUrl}" alt="" loading="lazy" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,${svgIconEncoded}';">
                 </div>
                 <div class="exercise-content">
                     <div class="exercise-header">
@@ -1041,7 +997,7 @@ function openExerciseModal(exerciseIndex) {
         const prevWeek = state.currentWeek - 1;
         const info = getPhaseInfo(state.currentWeek);
         const prevInfo = getPhaseInfo(prevWeek);
-        if (info.phase === prevInfo.phase && info.block === prevInfo.block) {
+        if (info.block === prevInfo.block) {
             lastWeekData = getExerciseData(prevWeek, state.currentSession, exercise.name);
         }
     }
@@ -1053,7 +1009,7 @@ function openExerciseModal(exerciseIndex) {
     const defaultReps = parseInt(repsStr.split('-')[0]) || parseInt(repsStr) || 10;
 
     if (lastWeekData?.sets?.length > 0 && elements.lastWeekInfo) {
-        const lastSets = lastWeekData.sets.map((s, i) => `S${i+1}: ${s.weight}kg x ${s.reps}`).join(' | ');
+        const lastSets = lastWeekData.sets.map((s, i) => `S${i+1}: ${formatSet(s.weight, s.reps)}`).join(' | ');
         elements.lastWeekInfo.innerHTML = `<h4>Last Week</h4><div class="values">${lastSets}</div>`;
         elements.lastWeekInfo.style.display = 'block';
         const best = lastWeekData.sets.reduce((max, s) => (s.weight > max.weight) ? s : max, lastWeekData.sets[0]);
@@ -1081,7 +1037,7 @@ function openExerciseModal(exerciseIndex) {
         const setData = currentData.sets?.[i];
         const isCompleted = setData ? 'completed' : '';
         const isActive = i === (currentData.sets?.length || 0) ? 'active' : '';
-        const label = setData ? `${setData.weight}kg x ${setData.reps}` : `Set ${i + 1}`;
+        const label = setData ? formatSet(setData.weight, setData.reps) : `Set ${i + 1}`;
         setBtnsHtml += `<button class="set-btn ${isCompleted} ${isActive}" data-set="${i}">${label}</button>`;
     }
 
@@ -1114,8 +1070,8 @@ function saveSet() {
     const weight = parseFloat(elements.weightInput?.value) || 0;
     const reps = parseInt(elements.repsInput?.value) || 0;
 
-    if (weight <= 0 || reps <= 0) {
-        showToast('Please enter valid weight and reps');
+    if (weight < 0 || reps <= 0) {
+        showToast('Please enter valid reps (weight 0 = bodyweight)');
         return;
     }
 
@@ -1124,7 +1080,7 @@ function saveSet() {
     currentData.sets[state.currentSetIndex] = { weight, reps };
     setExerciseData(state.currentWeek, state.currentSession, state.currentExercise.name, currentData);
 
-    showToast(`Set ${state.currentSetIndex + 1} saved: ${weight} kg x ${reps} reps`);
+    showToast(`Set ${state.currentSetIndex + 1} saved: ${formatSet(weight, reps)}`);
     closeModal();
     renderExercises();
 }
@@ -1206,7 +1162,7 @@ function renderProgress() {
     let historyHtml = '<h3>Recent Workouts</h3>';
     for (let week = state.currentWeek; week >= Math.max(1, state.currentWeek - 2); week--) {
         const weekInfo = getPhaseInfo(week);
-        historyHtml += `<div class="week-history"><h4>Week ${week}${weekInfo.isDeload ? ' (Deload)' : ''} - ${weekInfo.blockName}</h4>`;
+        historyHtml += `<div class="week-history"><h4>Week ${week} - ${weekInfo.blockName}</h4>`;
         for (let session = 1; session <= SESSIONS_PER_WEEK; session++) {
             const exercises = getExercisesForWeek(week, session);
             if (!exercises || exercises.length === 0) continue;
@@ -1227,9 +1183,9 @@ function renderProgress() {
 }
 
 // ===== Event Handlers =====
-async function init() {
+function init() {
     initElements();
-    await loadState();
+    loadState();
 
     if (elements.prevWeek) {
         elements.prevWeek.addEventListener('click', () => {
@@ -1275,9 +1231,11 @@ async function init() {
         });
     });
 
-    document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('modal-overlay')) closeModal();
-    });
+    if (elements.modal) {
+        elements.modal.addEventListener('click', (e) => {
+            if (e.target === elements.modal) closeModal();
+        });
+    }
 
     const closeBtn = document.querySelector('.close-modal');
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
