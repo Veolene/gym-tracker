@@ -2,319 +2,167 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#6366f1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+    <meta name="theme-color" content="#0b0d12">
+    <meta name="color-scheme" content="dark">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Gym Tracker - Essentials 5x Program</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Offline workout log for Jeff Nippard's Essentials 5x/week program">
+    <title>Gym Tracker</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icons/icon-192.png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="app">
-        <!-- Header -->
-        <header class="header">
-            <button id="settings-btn" class="btn-settings" aria-label="Settings">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-            </button>
-            <h1>Gym Tracker</h1>
-            <div class="week-selector">
-                <button id="prevWeek" class="btn-nav">◀</button>
-                <span id="currentWeek">Week 1</span>
-                <button id="nextWeek" class="btn-nav">▶</button>
+    <!-- Icon sprite (stroke icons, 24x24) -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <symbol id="i-chev-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+        <symbol id="i-chev-right" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+        <symbol id="i-chev-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+        <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+        <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+        <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+        <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+        <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></symbol>
+        <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20h16M7 16v-5M12 16V6M17 16v-8"/></symbol>
+        <symbol id="i-book" viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></symbol>
+        <symbol id="i-swap" viewBox="0 0 24 24"><path d="M17 3l4 4-4 4M3 11V9a2 2 0 0 1 2-2h16M7 21l-4-4 4-4M21 13v2a2 2 0 0 1-2 2H3"/></symbol>
+        <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></symbol>
+        <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></symbol>
+        <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+        <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></symbol>
+        <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></symbol>
+        <symbol id="i-expand" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></symbol>
+        <symbol id="i-cloud-off" viewBox="0 0 24 24"><path d="M2 2l20 20M5.8 5.8A7 7 0 0 0 8 19h9a5 5 0 0 0 2.5-.7M21.4 15A4.5 4.5 0 0 0 17 9h-1.3A7 7 0 0 0 9.7 4.3"/></symbol>
+        <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+        <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 22c4 0 7-2.7 7-7 0-3.4-2.1-6-4.2-8.2-.4 2.2-1.6 3.6-3 4.3.3-3.2-.9-6.3-3.3-9.1C7.6 6.3 5 9.5 5 15c0 4.3 3 7 7 7z"/></symbol>
+        <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8M3 3v5h5M12 7v5l3 2"/></symbol>
+    </svg>
+
+    <div class="app">
+        <header class="topbar">
+            <div class="week-nav">
+                <button class="icon-btn" data-action="week-prev" aria-label="Previous week"><svg class="icon"><use href="#i-chev-left"/></svg></button>
+                <button class="week-btn" data-action="open-weeks" aria-haspopup="dialog">
+                    <span class="week-main" id="week-main">Week 1</span>
+                    <span class="week-sub" id="week-sub">of 12 · Block 1</span>
+                </button>
+                <button class="icon-btn" data-action="week-next" aria-label="Next week"><svg class="icon"><use href="#i-chev-right"/></svg></button>
             </div>
+            <button class="icon-btn settings-btn" data-action="open-settings" aria-label="Settings">
+                <svg class="icon"><use href="#i-gear"/></svg>
+                <span class="dot" id="settings-dot" hidden></span>
+            </button>
         </header>
 
-        <!-- Navigation Tabs -->
-        <nav class="tabs">
-            <button class="tab active" data-tab="workout">Workout</button>
-            <button class="tab" data-tab="progress">Progress</button>
-            <button class="tab" data-tab="tips">Tips</button>
-            <button class="tab" data-tab="warmup">Warm-Up</button>
-        </nav>
+        <nav class="session-tabs" id="session-tabs" aria-label="Sessions"></nav>
 
-        <!-- Main Content -->
-        <main class="content">
-            <!-- Workout Tab -->
-            <section id="workout" class="tab-content active">
-                <!-- Session Selector - 5 Sessions (Upper/Lower Split) -->
-                <div class="session-selector">
-                    <button class="session-btn active" data-session="1">Upper<br><small>#1</small></button>
-                    <button class="session-btn" data-session="2">Lower<br><small>#2</small></button>
-                    <button class="session-btn" data-session="3">Push<br><small>#3</small></button>
-                    <button class="session-btn" data-session="4">Pull<br><small>#4</small></button>
-                    <button class="session-btn" data-session="5">Legs<br><small>#5</small></button>
-                </div>
+        <main class="main" id="main">
+            <section class="view" id="view-workout" aria-label="Workout"></section>
+            <section class="view" id="view-progress" aria-label="Progress" hidden></section>
+            <section class="view" id="view-guide" aria-label="Guide" hidden>
+                <h1 class="view-title">Guide</h1>
 
-                <!-- Exercise List -->
-                <div id="exerciseList" class="exercise-list">
-                    <!-- Exercises will be loaded here -->
-                </div>
-            </section>
+                <section class="card prose">
+                    <h2 class="card-title">How the program works</h2>
+                    <p>Jeff Nippard's <strong>Essentials</strong> program: 12 weeks, 5 sessions a week (Upper, Lower, Push, Pull, Legs). The weeks come in <strong>3 blocks of 4</strong> &mdash; the exercises stay the same within a block and change when a new block starts.</p>
+                    <p><strong>Progress every week:</strong> beat last week by adding a little weight (1&ndash;2.5&nbsp;kg) or 1&ndash;2 reps on the same exercise, with the same clean form. The app shows what you did last time on every set so you always know the number to beat.</p>
+                </section>
 
-            <!-- Progress Tab -->
-            <section id="progress" class="tab-content">
-                <div class="progress-summary">
-                    <h2>Weekly Progress</h2>
-                    <div id="progressStats" class="stats-grid">
-                        <!-- Stats loaded dynamically -->
-                    </div>
-                </div>
-                <div id="progressHistory" class="progress-history">
-                    <!-- History loaded dynamically -->
-                </div>
-            </section>
+                <section class="card prose">
+                    <h2 class="card-title">Intensity &amp; techniques</h2>
+                    <dl class="glossary">
+                        <dt><span class="tag tag-rpe">RPE</span></dt>
+                        <dd><strong>Rate of perceived exertion</strong> &mdash; how hard the set should feel. RPE 10 = true failure, 9 = one more rep was possible, 8 = two more, 7 = three more.</dd>
+                        <dt><span class="tag tag-drop">Dropset</span></dt>
+                        <dd>On the <strong>last set only</strong>: finish your reps, immediately drop the weight by about half, and do the same number of reps again. Log the main part of the set.</dd>
+                        <dt><span class="tag tag-super">A1 / A2</span></dt>
+                        <dd><strong>Superset</strong> &mdash; alternate the two exercises: a set of A1, straight into a set of A2, then rest. Repeat for each round.</dd>
+                        <dt><span class="tag">Top set</span></dt>
+                        <dd>A heavy, low-rep set to build strength. Warm up properly first.</dd>
+                        <dt><span class="tag">Back-off</span></dt>
+                        <dd>A lighter set after the top set with more reps &mdash; focus on the stretch and squeeze.</dd>
+                        <dt><span class="tag">Failure</span></dt>
+                        <dd>As many good reps as possible; stop when your form breaks.</dd>
+                    </dl>
+                </section>
 
-            <!-- Tips Tab -->
-            <section id="tips" class="tab-content">
-                <div class="tips-container">
-                    <div class="tip-card">
-                        <h3>Progressive Overload</h3>
-                        <p>Aim to increase weight by 1-2.5 kg OR add 1-2 reps each week. Small consistent progress leads to big gains!</p>
-                    </div>
-                    <div class="tip-card">
-                        <h3>Rest Between Sets</h3>
-                        <p><strong>Compound exercises:</strong> 2-3 minutes<br>
-                        <strong>Isolation exercises:</strong> 60-90 seconds</p>
-                    </div>
-                    <div class="tip-card">
-                        <h3>Rep Ranges</h3>
-                        <p><strong>Strength:</strong> 4-6 reps<br>
-                        <strong>Hypertrophy:</strong> 8-12 reps<br>
-                        <strong>Endurance:</strong> 15-20 reps</p>
-                    </div>
-                    <div class="tip-card">
-                        <h3>Nutrition Basics</h3>
-                        <p><strong>Protein:</strong> 1.6-2.2g per kg bodyweight<br>
-                        <strong>Water:</strong> 3-4 liters daily<br>
-                        <strong>Sleep:</strong> 7-9 hours</p>
-                    </div>
-                    <div class="tip-card">
-                        <h3>Form Tips</h3>
-                        <p>• Control the negative (lowering) phase<br>
-                        • Full range of motion<br>
-                        • Mind-muscle connection<br>
-                        • Don't ego lift - proper form first!</p>
-                    </div>
-                    <div class="tip-card">
-                        <h3>Signs to Deload</h3>
-                        <p>• Strength decreasing for 2+ weeks<br>
-                        • Feeling constantly fatigued<br>
-                        • Joint pain or discomfort<br>
-                        • Poor sleep quality</p>
-                    </div>
-                </div>
-            </section>
+                <section class="card">
+                    <h2 class="card-title">Warm-up</h2>
+                    <p class="card-sub">About 5&ndash;10 minutes before every session. Tick things off as you go &mdash; the list resets each day.</p>
+                    <div id="warmup-list"></div>
+                </section>
 
-            <!-- Warm-Up Tab -->
-            <section id="warmup" class="tab-content">
-                <div class="warmup-container">
-                    <h2>Pre-Workout Warm-Up</h2>
-                    
-                    <div class="warmup-section">
-                        <h3>General Warm-Up (5 mins)</h3>
-                        <div class="warmup-exercises">
-                            <div class="warmup-card">
-                                <div class="warmup-info">
-                                    <input type="checkbox" id="wu1"><label for="wu1">Light Cardio - 3 minutes</label>
-                                    <span class="warmup-detail">Bike, treadmill, or jumping jacks</span>
-                                </div>
-                            </div>
-                            <div class="warmup-card">
-                                <div class="warmup-info">
-                                    <input type="checkbox" id="wu2"><label for="wu2">Arm Circles - 20 each direction</label>
-                                    <span class="warmup-detail">Forward and backward</span>
-                                </div>
-                            </div>
-                            <div class="warmup-card">
-                                <div class="warmup-info">
-                                    <input type="checkbox" id="wu3"><label for="wu3">Leg Swings - 15 each leg</label>
-                                    <span class="warmup-detail">Front to back motion</span>
-                                </div>
-                            </div>
-                            <div class="warmup-card">
-                                <div class="warmup-info">
-                                    <input type="checkbox" id="wu4"><label for="wu4">Hip Circles - 10 each direction</label>
-                                    <span class="warmup-detail">Clockwise and counter-clockwise</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <section class="card prose">
+                    <h2 class="card-title">Warm-up sets before heavy work</h2>
+                    <p>Each exercise lists how many warm-up sets to do. Use your planned working weight:</p>
+                    <ul class="ramp">
+                        <li><span class="ramp-pct">50%</span><span>× 10 easy reps to get blood flowing</span></li>
+                        <li><span class="ramp-pct">70%</span><span>× 6 reps to groove the movement</span></li>
+                        <li><span class="ramp-pct">85%</span><span>× 3 reps to prime for the heavy set</span></li>
+                    </ul>
+                    <p class="muted">One warm-up set: do the 70% set. Two: 50% and 75%. The exercise screen works out the weights for you.</p>
+                </section>
 
-                    <div class="warmup-section">
-                        <h3>Dynamic Stretches</h3>
-                        <div class="warmup-exercises">
-                            <div class="warmup-card">
-                                <div class="warmup-info">
-                                    <input type="checkbox" id="wu5"><label for="wu5">Walking Lunges - 10 each leg</label>
-                                    <span class="warmup-detail">Bodyweight only</span>
-                                </div>
-                            </div>
-                            <div class="warmup-card">
-                                <div class="warmup-info">
-                                    <input type="checkbox" id="wu6"><label for="wu6">High Knees - 20 seconds</label>
-                                    <span class="warmup-detail">Drive knees up high</span>
-                                </div>
-                            </div>
-                            <div class="warmup-card">
-                                <div class="warmup-info">
-                                    <input type="checkbox" id="wu7"><label for="wu7">Butt Kicks - 20 seconds</label>
-                                    <span class="warmup-detail">Heels to glutes</span>
-                                </div>
-                            </div>
-                            <div class="warmup-card">
-                                <div class="warmup-info">
-                                    <input type="checkbox" id="wu8"><label for="wu8">Torso Twists - 15 each side</label>
-                                    <span class="warmup-detail">Rotate through spine</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <section class="card prose">
+                    <h2 class="card-title">Recovery</h2>
+                    <ul class="bullets">
+                        <li><strong>Protein:</strong> 1.6&ndash;2.2 g per kg of bodyweight a day.</li>
+                        <li><strong>Sleep:</strong> 7&ndash;9 hours &mdash; this is when you actually grow.</li>
+                        <li><strong>Water:</strong> 3&ndash;4 litres a day, more when it's hot.</li>
+                        <li><strong>Rest timer:</strong> starts by itself after each set &mdash; heavy compound sets need the full rest.</li>
+                    </ul>
+                    <h3 class="card-subtitle">Signs you need a deload</h3>
+                    <ul class="bullets">
+                        <li>Strength going down for 2+ weeks</li>
+                        <li>Constant fatigue, poor sleep</li>
+                        <li>Joint pain or nagging aches</li>
+                    </ul>
+                </section>
 
-                    <div class="warmup-section">
-                        <h3>Exercise-Specific Warm-Up</h3>
-                        <div class="warmup-exercises">
-                            <div class="warmup-card simple">
-                                <div class="warmup-set-icon">50%</div>
-                                <div class="warmup-info">
-                                    <input type="checkbox" id="wu9"><label for="wu9">1 set @ 50% working weight</label>
-                                    <span class="warmup-detail">12 easy reps to get blood flowing</span>
-                                </div>
-                            </div>
-                            <div class="warmup-card simple">
-                                <div class="warmup-set-icon">70%</div>
-                                <div class="warmup-info">
-                                    <input type="checkbox" id="wu10"><label for="wu10">1 set @ 70% working weight</label>
-                                    <span class="warmup-detail">8 reps to prime muscles</span>
-                                </div>
-                            </div>
-                            <div class="warmup-card simple">
-                                <div class="warmup-set-icon">85%</div>
-                                <div class="warmup-info">
-                                    <input type="checkbox" id="wu11"><label for="wu11">1 set @ 85% working weight</label>
-                                    <span class="warmup-detail">4 reps to activate nervous system</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="warmup-section">
-                        <h3>Mobility Work (Optional)</h3>
-                        <div class="warmup-exercises">
-                            <div class="warmup-card">
-                                <div class="warmup-info">
-                                    <input type="checkbox" id="wu12"><label for="wu12">Shoulder Dislocations - 15 reps</label>
-                                    <span class="warmup-detail">Use band or towel</span>
-                                </div>
-                            </div>
-                            <div class="warmup-card">
-                                <div class="warmup-info">
-                                    <input type="checkbox" id="wu13"><label for="wu13">Cat-Cow Stretches - 10 reps</label>
-                                    <span class="warmup-detail">Arch and round spine</span>
-                                </div>
-                            </div>
-                            <div class="warmup-card">
-                                <div class="warmup-info">
-                                    <input type="checkbox" id="wu14"><label for="wu14">Deep Squat Hold - 30 seconds</label>
-                                    <span class="warmup-detail">Sink into bottom position</span>
-                                </div>
-                            </div>
-                            <div class="warmup-card">
-                                <img src="https://fitnessprogramer.com/wp-content/uploads/2022/02/Foam-Rolling-Quadriceps.gif" alt="Foam Rolling" class="warmup-image" loading="lazy" onerror="this.style.display='none';">
-                                <div class="warmup-info">
-                                    <input type="checkbox" id="wu15"><label for="wu15">Foam Rolling - 2 mins/muscle</label>
-                                    <span class="warmup-detail">Focus on tight areas</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <p class="credit">Exercise animations by fitnessprogramer.com</p>
             </section>
         </main>
-
     </div>
 
-    <!-- Input Modal -->
-    <div id="input-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modal-exercise-name" class="selectable">Exercise</h3>
-                <button class="close-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="last-week-info" id="last-week-info">
-                    <!-- Last week's data shown here -->
-                </div>
-                <div class="warmup-info" id="warmup-info"></div>
-                <div class="input-grid">
-                    <div class="input-group">
-                        <label>Weight (kg)</label>
-                        <div class="number-input">
-                            <button class="minus">-</button>
-                            <input type="number" id="weight-input" value="0" min="0" step="2.5" inputmode="decimal">
-                            <button class="plus">+</button>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>Reps</label>
-                        <div class="number-input">
-                            <button class="minus">-</button>
-                            <input type="number" id="reps-input" value="0" min="0" inputmode="numeric">
-                            <button class="plus">+</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="set-buttons" id="set-buttons">
-                    <!-- Set buttons dynamically generated -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="repeat-set" class="btn-secondary" style="display:none"></button>
-                <button id="save-set" class="btn-primary">Save Set</button>
-            </div>
+    <!-- Floating rest timer (shown while resting and no sheet is open) -->
+    <div class="rest-bar" id="rest-bar" hidden></div>
+
+    <nav class="bottom-nav" aria-label="Main">
+        <button class="nav-btn" data-action="tab" data-tab="workout" aria-label="Workout"><svg class="icon"><use href="#i-dumbbell"/></svg><span>Workout</span></button>
+        <button class="nav-btn" data-action="tab" data-tab="progress" aria-label="Progress"><svg class="icon"><use href="#i-chart"/></svg><span>Progress</span></button>
+        <button class="nav-btn" data-action="tab" data-tab="guide" aria-label="Guide"><svg class="icon"><use href="#i-book"/></svg><span>Guide</span></button>
+    </nav>
+
+    <!-- Sheets -->
+    <dialog class="sheet sheet-exercise" id="exercise-sheet" aria-label="Exercise">
+        <div class="sheet-grab" data-drag aria-hidden="true"></div>
+        <header class="sheet-head" id="sx-head"></header>
+        <div class="sheet-scroll" id="sx-scroll">
+            <figure class="demo" id="sx-demo"></figure>
+            <div id="sx-info"></div>
+            <div id="sx-sets"></div>
+            <div id="sx-extra"></div>
         </div>
-    </div>
+        <footer class="sheet-foot" id="sx-foot"></footer>
+    </dialog>
 
-    <!-- Rest Timer Bar -->
-    <div id="rest-timer" class="rest-timer">
-        <div class="rest-timer-info">
-            <span class="rest-timer-title">Rest</span>
-            <span id="rest-timer-label" class="rest-timer-label"></span>
-        </div>
-        <span id="rest-timer-time" class="rest-timer-time">0:00</span>
-        <button id="rest-timer-skip" class="rest-timer-skip">Skip</button>
-    </div>
+    <dialog class="sheet sheet-compact" id="swap-sheet" aria-label="Swap exercise"></dialog>
+    <dialog class="sheet sheet-compact" id="week-sheet" aria-label="Choose week"></dialog>
+    <dialog class="sheet" id="settings-sheet" aria-label="Settings"></dialog>
+    <dialog class="sheet sheet-media" id="media-sheet" aria-label="Exercise demo"></dialog>
+    <dialog class="alert" id="confirm-dialog"></dialog>
 
-    <!-- Settings Modal -->
-    <div id="settings-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Settings</h3>
-                <button class="close-modal" id="close-settings">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="settings-section">
-                    <h4>Backup</h4>
-                    <p class="settings-desc">All data lives on this device. Export a backup now and then so nothing is ever lost.</p>
-                    <button id="export-data" class="btn-primary">Export data</button>
-                    <button id="import-data" class="btn-secondary">Import data</button>
-                    <input type="file" id="import-file" accept=".json,application/json" hidden>
-                </div>
-                <div class="settings-section">
-                    <h4>Offline media</h4>
-                    <p class="settings-desc">Save all exercise animations to this device so they show without internet. Best done on Wi-Fi (~40 MB).</p>
-                    <button id="download-media" class="btn-secondary">Download all exercise media</button>
-                    <div id="media-progress" class="settings-status"></div>
-                </div>
-                <div class="settings-section">
-                    <div id="storage-status" class="settings-status"></div>
-                    <div class="settings-status">Version <span id="app-version"></span></div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="banner-host" id="banner-host"></div>
+    <div class="toast-host" id="toast-host" popover="manual" aria-live="polite"></div>
+    <input type="file" id="import-file" accept=".json,application/json" hidden>
 
+    <script src="program.js"></script>
+    <script src="exercises.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

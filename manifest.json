@@ -1,13 +1,13 @@
 {
     "name": "Gym Tracker",
-    "short_name": "GymTracker",
-    "description": "Track your bodybuilding workouts and progress",
+    "short_name": "Gym Tracker",
+    "description": "Offline workout log for Jeff Nippard's Essentials 5x/week program",
     "id": "./",
     "start_url": "./",
     "scope": "./",
     "display": "standalone",
-    "background_color": "#0f172a",
-    "theme_color": "#6366f1",
+    "background_color": "#0b0d12",
+    "theme_color": "#0b0d12",
     "orientation": "portrait",
     "icons": [
         {

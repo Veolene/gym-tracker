@@ -1,943 +1,1996 @@
-// ===== Jeff Nippard's Essentials Program - 5x/Week =====
-// 12 Weeks, 3 Blocks (exercises change each block)
-// Block 1: Weeks 1-4, Block 2: Weeks 5-8, Block 3: Weeks 9-12
-// 5 Sessions per week: Upper, Lower, Push, Pull, Legs
-// All weights in KG
+'use strict';
+// ===== Gym Tracker =====
+// Data lives in program.js (PROGRAM, WARMUP) and exercises.js (EXERCISE_MEDIA).
+// All state is local to the device (localStorage) - see README "Your data".
 
-// ===== Exercise GIFs from fitnessprogramer.com =====
-// Hand-picked GIFs for each exercise (corrected URLs)
-const exerciseGifs = {
-    // Chest Exercises
-    "low incline smith machine press": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Smith-Machine-Incline-Bench-Press.gif",
-    "low incline db press": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Incline-Dumbbell-Press.gif",
-    "flat db press": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Press.gif",
-    "flat db press (heavy)": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Press.gif",
-    "flat db press (back off)": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Press.gif",
-    "dumbbell bench press": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Press.gif",
-    "cable chest press": "https://fitnessprogramer.com/wp-content/uploads/2022/01/Band-Standing-Chest-Press.gif",
-    "close-grip push up": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Push-Up.gif",
-    "flat machine chest press": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Chest-Press-Machine.gif",
-    "decline machine chest press": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Smith-Machine-Decline-Bench-Press.gif",
-    "bottom-half low incline db press": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Incline-Dumbbell-Press.gif",
-    "pec deck": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Pec-Deck-Fly.gif",
-    "pec deck (integrated partials)": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Pec-Deck-Fly.gif",
-    "bent-over cable pec flye": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Crossover.gif",
-    "bottom-half seated cable flye": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Crossover.gif",
-    "cable crossover ladder": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Crossover.gif",
-    "paused assisted dip": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Chest-Dips.gif",
-    
-    // Back - Lat Exercises
-    "cross-body lat pull-around": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Lat-Pulldown.gif",
-    "chest-supported machine row": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Lever-T-bar-Row.gif",
-    "chest-supported t-bar row": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Lever-T-bar-Row.gif",
-    "straight-bar lat prayer": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Rope-Straight-Arm-Pulldown.gif",
-    "machine lat pullover": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Pullover.gif",
-    "half-kneeling 1-arm lat pulldown": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Half-Kneeling-Lat-Pulldown.gif",
-    "1-arm half-kneeling lat pulldown": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Half-Kneeling-Lat-Pulldown.gif",
-    "assisted pull-up": "https://fitnessprogramer.com/wp-content/uploads/2021/04/Assisted-Pull-up.gif",
-    "wide-grip pull-up": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Pull-up.gif",
-    "lat pulldown": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Lat-Pulldown.gif",
-    "neutral-grip lat pulldown": "https://fitnessprogramer.com/wp-content/uploads/2021/06/V-bar-Lat-Pulldown.gif",
-    "super-rom overhand cable row": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Seated-Cable-Row.gif",
-    "overhand machine row": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Lever-T-bar-Row.gif",
-    "smith machine deficit row": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bent-Over-Row.gif",
-    "moto cable row": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Seated-Cable-Row.gif",
-    "seated cable row": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Seated-Cable-Row.gif",
-    "pendlay row": "https://fitnessprogramer.com/wp-content/uploads/2022/07/Barbell-Pendlay-Row.gif",
-    "machine pendlay row": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Lever-T-bar-Row.gif",
-    
-    // Shoulders
-    "cuffed behind-the-back lateral raise": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Lateral-Raise.gif",
-    "cross-body cable y-raise": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Lateral-Raise.gif",
-    "super-rom db lateral raise": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lateral-Raise.gif",
-    "db lateral raise": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lateral-Raise.gif",
-    "meadows incline db lateral raise": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lateral-Raise.gif",
-    "high-cable cuffed lateral raise": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Lateral-Raise.gif",
-    "machine shoulder press": "https://fitnessprogramer.com/wp-content/uploads/2022/04/Plate-Loaded-Shoulder-Press.gif",
-    "seated db shoulder press": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Shoulder-Press.gif",
-    "cable shoulder press": "https://fitnessprogramer.com/wp-content/uploads/2021/04/Cable-Shoulder-Press.gif",
-    "cable reverse flye": "https://fitnessprogramer.com/wp-content/uploads/2021/02/cable-rear-delt-fly.gif",
-    "reverse pec deck": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Rear-Delt-Machine-Flys.gif",
-    "lying paused rope face pull": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Face-Pull.gif",
-    "rope facepull": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Face-Pull.gif",
-    
-    // Triceps
-    "overhead cable triceps extension": "https://fitnessprogramer.com/wp-content/uploads/2021/04/Cable-Rope-Overhead-Triceps-Extension.gif",
-    "db skull crusher": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Dumbbell-Skull-Crusher.gif",
-    "ez-bar skull crusher": "https://fitnessprogramer.com/wp-content/uploads/2022/02/Barbell-Reverse-Grip-Skullcrusher-1.gif",
-    "seated db french press": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Seated-Dumbbell-Triceps-Extension.gif",
-    "cable triceps kickback": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Cable-Tricep-Kickback.gif",
-    "katana triceps extension": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Pushdown.gif",
-    "triceps pressdown": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Pushdown.gif",
-    "bench dip": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Bench-Dips.gif",
-    
-    // Biceps
-    "bayesian cable curl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/One-Arm-Cable-Curl.gif",
-    "bottom-2/3 preacher curl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Preacher-Curl.gif",
-    "hammer preacher curl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Preacher-Curl.gif",
-    "inverse db zottman curl": "https://fitnessprogramer.com/wp-content/uploads/2021/04/zottman-curl.gif",
-    "db incline curl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Seated-Incline-Dumbbell-Curl.gif",
-    "spider curl": "https://fitnessprogramer.com/wp-content/uploads/2021/04/Lever-Preacher-Curl.gif",
-    "slow-eccentric db curl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Curl.gif",
-    "ez-bar cable curl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/cable-curl.gif",
-    "bottom-half incline db curl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Seated-Incline-Dumbbell-Curl.gif",
-    "db hammer curl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Hammer-Curl.gif",
-    
-    // Legs - Quads
-    "hack squat": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Sled-Hack-Squat.gif",
-    "machine squat": "https://fitnessprogramer.com/wp-content/uploads/2024/10/smith-machine-squat.gif",
-    "bottom-half smith machine squat": "https://fitnessprogramer.com/wp-content/uploads/2024/10/smith-machine-squat.gif",
-    "leg extension": "https://fitnessprogramer.com/wp-content/uploads/2021/02/LEG-EXTENSION.gif",
-    "leg press": "https://fitnessprogramer.com/wp-content/uploads/2015/11/Leg-Press.gif",
-    "super-rom leg press": "https://fitnessprogramer.com/wp-content/uploads/2015/11/Leg-Press.gif",
-    "belt squat": "https://fitnessprogramer.com/wp-content/uploads/2021/05/Bodyweight-Squat.gif",
-    "reverse nordic": "https://fitnessprogramer.com/wp-content/uploads/2022/10/sissy-squat.gif",
-    "sissy squat": "https://fitnessprogramer.com/wp-content/uploads/2022/10/sissy-squat.gif",
-    "a2: sissy squat": "https://fitnessprogramer.com/wp-content/uploads/2022/10/sissy-squat.gif",
-    "goblet squat": "https://fitnessprogramer.com/wp-content/uploads/2021/06/kettlebell-goblet-squat.gif",
-    "a2: goblet squat": "https://fitnessprogramer.com/wp-content/uploads/2021/06/kettlebell-goblet-squat.gif",
-    "smith machine reverse lunge": "https://fitnessprogramer.com/wp-content/uploads/2021/05/Barbell-Bulgarian-Split-Squat.gif",
-    
-    // Legs - Hamstrings
-    "seated leg curl": "https://fitnessprogramer.com/wp-content/uploads/2021/08/Seated-Leg-Curl.gif",
-    "lying leg curl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Curl.gif",
-    "snatch-grip rdl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Romanian-Deadlift.gif",
-    "paused barbell rdl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Romanian-Deadlift.gif",
-    "barbell rdl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Romanian-Deadlift.gif",
-    "glute-ham raise": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Lever-Single-Leg-Curl.gif",
-    "weighted 45deg hyperextension": "https://fitnessprogramer.com/wp-content/uploads/2021/02/hyperextension.gif",
-    
-    // Legs - Adductors/Abductors
-    "machine hip adduction": "https://fitnessprogramer.com/wp-content/uploads/2021/02/HIP-ADDUCTION-MACHINE.gif",
-    "a1: machine hip adduction": "https://fitnessprogramer.com/wp-content/uploads/2021/02/HIP-ADDUCTION-MACHINE.gif",
-    "cable hip adduction": "https://fitnessprogramer.com/wp-content/uploads/2021/05/Cable-Hip-Adduction.gif",
-    "a1: cable hip adduction": "https://fitnessprogramer.com/wp-content/uploads/2021/05/Cable-Hip-Adduction.gif",
-    "machine hip abduction": "https://fitnessprogramer.com/wp-content/uploads/2021/02/HiP-ABDUCTION-MACHINE.gif",
-    
-    // Calves
-    "leg press calf press": "https://fitnessprogramer.com/wp-content/uploads/2021/05/Leg-Press-Calf-Raise.gif",
-    "standing calf raise": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Standing-Calf-Raise.gif",
-    "bottom-half standing calf raise": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Standing-Calf-Raise.gif",
-    "donkey calf raise": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Standing-Calf-Raise.gif",
-    "seated calf raise": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Lever-Seated-Calf-Raise.gif",
-    
-    // Abs
-    "cable crunch": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Kneeling-Cable-Crunch.gif",
-    "machine crunch": "https://fitnessprogramer.com/wp-content/uploads/2015/11/Crunch.gif",
-    "roman chair leg raise": "https://fitnessprogramer.com/wp-content/uploads/2021/05/Captains-Chair-Leg-Raise.gif",
-    "decline weighted crunch": "https://fitnessprogramer.com/wp-content/uploads/2021/05/Weighted-Crunch.gif",
-    
-    // Weak Points - generic exercises
-    "weak point exercise 1": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lateral-Raise.gif",
-    "weak point exercise 2": "https://fitnessprogramer.com/wp-content/uploads/2021/04/Lever-Shoulder-Press.gif",
-    "weak point exercise 2 (optional)": "https://fitnessprogramer.com/wp-content/uploads/2021/04/Lever-Shoulder-Press.gif",
-    
-    // ===== SUPERSET EXERCISES (A1/A2) - Hand-picked GIFs =====
-    // Block 1 Upper - Triceps/Biceps superset
-    "a1: ez bar skull crusher": "https://fitnessprogramer.com/wp-content/uploads/2022/02/Barbell-Reverse-Grip-Skullcrusher-1.gif",
-    "a2: ez bar curl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Curl.gif",
-    
-    // Block 1 Lower - Calves/Abs superset  
-    "a1: standing calf raise": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Standing-Calf-Raise.gif",
-    "a2: hanging leg raise": "https://fitnessprogramer.com/wp-content/uploads/2021/08/Hanging-Leg-Raises.gif",
-    "hanging leg raise": "https://fitnessprogramer.com/wp-content/uploads/2021/08/Hanging-Leg-Raises.gif",
-    "hanging leg raise knees": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Hanging-Knee-Raises.gif",
-    
-    // Block 1 Legs - Calves/Abs superset
-    "a1: seated calf raise": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Lever-Seated-Calf-Raise.gif",
-    "a2: cable crunch": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Kneeling-Cable-Crunch.gif",
-    
-    // Block 2 Upper - Biceps/Triceps superset
-    "a1: db incline curl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Seated-Incline-Dumbbell-Curl.gif",
-    "a2: db french press": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Seated-Dumbbell-Triceps-Extension.gif",
-    
-    // Block 2 Lower - Abs/Calves superset
-    "a1: roman chair crunch": "https://fitnessprogramer.com/wp-content/uploads/2021/05/Captains-Chair-Leg-Raise.gif",
-    "a2: seated calf raise": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Lever-Seated-Calf-Raise.gif",
-    
-    // Block 2 Legs - Calves/Abs superset
-    "a1: leg press toe press": "https://fitnessprogramer.com/wp-content/uploads/2021/05/Leg-Press-Calf-Raise.gif",
-    "a2: machine crunch": "https://fitnessprogramer.com/wp-content/uploads/2015/11/Crunch.gif",
-    
-    // Block 3 Upper - Triceps/Biceps superset
-    "a1: overhead cable triceps extension": "https://fitnessprogramer.com/wp-content/uploads/2021/04/Cable-Rope-Overhead-Triceps-Extension.gif",
-    "a2: cable ez curl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/cable-curl.gif",
-    
-    // Block 3 Lower - Calves/Abs superset
-    "a2: two-arms two-legs dead bug": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dead-Bug.gif",
-    
-    // Block 3 Legs - Calves/Abs superset
-    "a2: plate-weighted crunch": "https://fitnessprogramer.com/wp-content/uploads/2021/05/Weighted-Crunch.gif",
-    "plate-weighted crunch": "https://fitnessprogramer.com/wp-content/uploads/2021/05/Weighted-Crunch.gif",
-    
-    // Stripped versions without A1:/A2: (only names not already defined above)
-    "ez bar skull crusher": "https://fitnessprogramer.com/wp-content/uploads/2022/02/Barbell-Reverse-Grip-Skullcrusher-1.gif",
-    "ez bar curl": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Curl.gif",
-    "roman chair crunch": "https://fitnessprogramer.com/wp-content/uploads/2021/05/Captains-Chair-Leg-Raise.gif"
-};
+const APP_VERSION = '3.0.0';                              // keep in sync with CACHE_VERSION in sw.js
+const STORAGE_KEY = 'nippardEssentials5x_12weeks_v1';     // never rename: holds everyone's history
+const PRE_V3_BACKUP_KEY = STORAGE_KEY + '_pre_v3';        // untouched copy of data saved by v2
+const GIF_CACHE = 'gif-cache-v1';                         // must match sw.js
+const TOTAL_WEEKS = PROGRAM.totalWeeks;
+const SESSIONS = [1, 2, 3, 4, 5];
+const WEIGHT_STEPS = [1, 2.5, 5];
+const DEFAULT_STEP = 2.5;
+const BACKUP_STALE_DAYS = 14;
+const DATA_KEY_RE = /^w(\d+)_s(\d+)_(.+)$/;
+const DAY = 86400000;
 
-function getExerciseGif(exerciseName) {
-    let name = exerciseName.toLowerCase();
-    
-    // Strip A1:/A2: prefix for superset exercises
-    if (name.startsWith("a1: ") || name.startsWith("a2: ")) {
-        name = name.substring(4);
+// ===== Small helpers =====
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ESC[c]);
+const icon = (name, cls = '') => `<svg class="icon ${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
+const round2 = (n) => Math.round(n * 100) / 100;
+const fmtNum = (n) => String(round2(n));
+const fmtInt = (n) => Math.round(n).toLocaleString();
+const plural = (n, one, many = one + 's') => `${n} ${n === 1 ? one : many}`;
+const range = (s) => String(s).replace(/(\d)\s*-\s*(\d)/g, '$1–$2');
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function fmtSet(s) { return s.weight === 0 ? `BW × ${s.reps}` : `${fmtNum(s.weight)} kg × ${s.reps}`; }
+function fmtSetShort(s) { return s.weight === 0 ? `BW×${s.reps}` : `${fmtNum(s.weight)}×${s.reps}`; }
+function fmtCompact(n) {
+    if (n >= 1e6) return `${fmtNum(n / 1e6).replace(/(\.\d)\d*/, '$1')}M`;
+    if (n >= 1e4) return `${Math.round(n / 1e3)}k`;
+    if (n >= 1e3) return `${(n / 1e3).toFixed(1).replace(/\.0$/, '')}k`;
+    return String(Math.round(n));
+}
+function localDate(ts) {
+    const d = new Date(ts);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function relDay(ts) {
+    const days = Math.round((new Date(localDate(Date.now())) - new Date(localDate(ts))) / DAY);
+    if (days <= 0) return 'today';
+    if (days === 1) return 'yesterday';
+    if (days < 7) return `${days} days ago`;
+    return new Date(ts).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+}
+function shortDate(ts) {
+    return new Date(ts).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+// ===== Program helpers =====
+const blockOf = (week) => Math.ceil(week / PROGRAM.blockLength);
+const blockRange = (block) => [(block - 1) * PROGRAM.blockLength + 1, block * PROGRAM.blockLength];
+const exercisesFor = (week, session) => PROGRAM.blocks[blockOf(week)]?.[session] || [];
+const sessionName = (s) => PROGRAM.sessions[s]?.name || `Session ${s}`;
+
+// "A1: EZ Bar Skull Crusher" -> { base: "EZ Bar Skull Crusher", superset: "A1", setTag: null }
+function parseName(name) {
+    let base = String(name);
+    let superset = null;
+    let setTag = null;
+    const ss = /^\s*(A\d+)\s*:\s*/i.exec(base);
+    if (ss) { superset = ss[1].toUpperCase(); base = base.slice(ss[0].length); }
+    const tag = /\s*\((Heavy|Back off)\)\s*$/i.exec(base);
+    if (tag) { setTag = /heavy/i.test(tag[1]) ? 'heavy' : 'backoff'; base = base.slice(0, tag.index); }
+    return { base: base.trim(), superset, setTag };
+}
+function restSeconds(rest) {
+    const m = /([\d.]+)\s*min/i.exec(rest || '');
+    return m ? Math.round(parseFloat(m[1]) * 60) : 0;
+}
+function restText(rest) {
+    const s = restSeconds(rest);
+    return s ? `${fmtNum(s / 60)} min rest` : 'No rest';
+}
+function repsLow(reps) {
+    const m = /\d+/.exec(reps || '');
+    return m ? parseInt(m[0], 10) : null;
+}
+// "10-12" -> "10–12 reps", "6-8 per leg" -> "6–8 reps per leg", "Failure" -> "to failure"
+function repsText(reps) {
+    const r = range(reps).trim();
+    const m = /^(\d+(?:–\d+)?)\s*(.*)$/.exec(r);
+    if (!m) return /fail/i.test(r) ? 'to failure' : r;
+    return `${m[1]} reps${m[2] ? ` ${m[2]}` : ''}`;
+}
+function warmupCount(w) {
+    const parts = String(w || '0').split('-').map((n) => parseInt(n, 10) || 0);
+    return Math.max(...parts);
+}
+function warmupText(w) {
+    const parts = String(w || '0').split('-');
+    if (warmupCount(w) === 0) return '';
+    const n = parts.length === 2 && parts[0] !== parts[1] ? `${parts[0]}–${parts[1]}` : parts[0];
+    return `${n} warm-up set${n === '1' ? '' : 's'}`;
+}
+function techniqueInfo(t) {
+    if (/^rpe/i.test(t)) return { kind: 'rpe', label: range(t), cls: 'tag-rpe' };
+    if (/drop/i.test(t)) return { kind: 'drop', label: 'Dropset', cls: 'tag-drop' };
+    if (/super/i.test(t)) return { kind: 'super', label: 'Superset', cls: 'tag-super' };
+    return { kind: 'other', label: t, cls: '' };
+}
+function moveFor(name) {
+    const id = exerciseMoveId(name);
+    return id ? { id, ...EXERCISE_MEDIA.moves[id] } : null;
+}
+function bestSet(sets) {
+    let best = null;
+    for (const s of sets || []) {
+        if (!best || s.weight > best.weight || (s.weight === best.weight && s.reps > best.reps)) best = s;
     }
-    
-    // Direct match (try with original name first, then stripped)
-    if (exerciseGifs[exerciseName.toLowerCase()]) return exerciseGifs[exerciseName.toLowerCase()];
-    if (exerciseGifs[name]) return exerciseGifs[name];
-    
-    // Partial matches - check both ways
-    for (const [key, url] of Object.entries(exerciseGifs)) {
-        if (name.includes(key) || key.includes(name)) return url;
+    return best;
+}
+
+// ===== State =====
+function defaultState() {
+    return {
+        currentWeek: 1,
+        currentSession: 1,
+        workoutData: {},            // "w{week}_s{session}_{exercise name}" -> { sets: [{ weight, reps, t, as? }] }
+        substitutionOverrides: {},  // same key -> name of the swapped-in exercise
+        activeTab: 'workout',
+        lastSavedAt: 0,
+        lastBackupAt: 0,
+        prefs: { sound: true, vibrate: true, keepAwake: true, steps: {} },
+        timer: null,                // { endsAt, duration, label, ref: { week, session, index } }
+        warmup: { date: '', done: [] },
+        dismissed: {}
+    };
+}
+
+function cleanSet(s) {
+    if (!s || typeof s !== 'object') return null;
+    const weight = typeof s.weight === 'string' ? parseFloat(s.weight) : s.weight;
+    const reps = typeof s.reps === 'string' ? parseFloat(s.reps) : s.reps;
+    if (!Number.isFinite(weight) || weight < 0 || weight > 2000) return null;
+    if (!Number.isFinite(reps) || reps < 1 || reps > 1000) return null;
+    const out = { weight: round2(weight), reps: Math.round(reps) };
+    if (Number.isFinite(s.t) && s.t > 0) out.t = s.t;
+    // `as` = the exercise this set was actually done as, when the slot was swapped
+    if (typeof s.as === 'string' && s.as.trim()) out.as = s.as.slice(0, 120);
+    return out;
+}
+
+// Which exercise a logged set was done as (a swap records it per set)
+const doneAs = (set, ex) => set.as || ex.name;
+
+// Accepts anything (old versions, imports, hand-edited files) and returns a valid state
+function normalizeState(raw) {
+    const s = defaultState();
+    if (!raw || typeof raw !== 'object') return s;
+    const week = parseInt(raw.currentWeek, 10);
+    if (week >= 1 && week <= TOTAL_WEEKS) s.currentWeek = week;
+    const session = parseInt(raw.currentSession, 10);
+    if (SESSIONS.includes(session)) s.currentSession = session;
+    if (raw.workoutData && typeof raw.workoutData === 'object') {
+        for (const [key, entry] of Object.entries(raw.workoutData)) {
+            if (!DATA_KEY_RE.test(key) || !entry || typeof entry !== 'object') continue;
+            const sets = Array.isArray(entry.sets) ? entry.sets.map(cleanSet).filter(Boolean) : [];
+            if (!sets.length) continue;
+            // Older formats labelled the whole entry; v2 kept swaps only as per-week overrides.
+            // Either way, record the label on each set that doesn't carry its own.
+            let label = typeof entry.performedAs === 'string' && entry.performedAs.trim() ? entry.performedAs : null;
+            const v2Swap = !raw.appVersion && raw.substitutionOverrides && raw.substitutionOverrides[key];
+            if (!label && typeof v2Swap === 'string' && v2Swap.trim()) label = v2Swap;
+            if (label) for (const set of sets) if (!set.as) set.as = label.slice(0, 120);
+            s.workoutData[key] = { sets };
+        }
     }
-    
-    // Keyword matching for common exercise types
-    if (name.includes("leg curl") || name.includes("hamstring curl")) return exerciseGifs["seated leg curl"];
-    if (name.includes("preacher")) return exerciseGifs["bottom-2/3 preacher curl"];
-    if (name.includes("incline") && name.includes("curl")) return exerciseGifs["db incline curl"];
-    if (name.includes("hammer")) return exerciseGifs["db hammer curl"];
-    if (name.includes("spider")) return exerciseGifs["spider curl"];
-    if (name.includes("zottman")) return exerciseGifs["inverse db zottman curl"];
-    if (name.includes("curl") && !name.includes("leg")) return exerciseGifs["bayesian cable curl"];
-    if (name.includes("incline") && name.includes("press")) return exerciseGifs["low incline db press"];
-    if (name.includes("chest") && name.includes("press")) return exerciseGifs["flat machine chest press"];
-    if (name.includes("shoulder") && name.includes("press")) return exerciseGifs["machine shoulder press"];
-    if (name.includes("french") || name.includes("skull")) return exerciseGifs["ez-bar skull crusher"];
-    if (name.includes("tricep") && name.includes("extension")) return exerciseGifs["overhead cable triceps extension"];
-    if (name.includes("pressdown") || name.includes("pushdown")) return exerciseGifs["triceps pressdown"];
-    if (name.includes("kickback")) return exerciseGifs["cable triceps kickback"];
-    if (name.includes("pulldown") || name.includes("pull-down") || name.includes("lat pull")) return exerciseGifs["lat pulldown"];
-    if (name.includes("pull-up") || name.includes("pullup") || name.includes("chin")) return exerciseGifs["assisted pull-up"];
-    if (name.includes("pullover")) return exerciseGifs["machine lat pullover"];
-    if (name.includes("t-bar") || name.includes("tbar")) return exerciseGifs["chest-supported t-bar row"];
-    if (name.includes("row")) return exerciseGifs["chest-supported machine row"];
-    if (name.includes("lateral") || name.includes("y-raise")) return exerciseGifs["db lateral raise"];
-    if (name.includes("rear delt") || name.includes("reverse fly")) return exerciseGifs["reverse pec deck"];
-    if (name.includes("flye") || name.includes("fly") || name.includes("crossover") || name.includes("pec deck")) return exerciseGifs["pec deck"];
-    if (name.includes("extension") && name.includes("leg")) return exerciseGifs["leg extension"];
-    if (name.includes("press") && name.includes("leg")) return exerciseGifs["leg press"];
-    if (name.includes("hack") || name.includes("squat machine")) return exerciseGifs["hack squat"];
-    if (name.includes("belt squat")) return exerciseGifs["belt squat"];
-    if (name.includes("goblet")) return exerciseGifs["goblet squat"];
-    if (name.includes("sissy")) return exerciseGifs["sissy squat"];
-    if (name.includes("nordic")) return exerciseGifs["reverse nordic"];
-    if (name.includes("squat") || name.includes("lunge")) return exerciseGifs["hack squat"];
-    if (name.includes("rdl") || name.includes("deadlift") || name.includes("romanian")) return exerciseGifs["barbell rdl"];
-    if (name.includes("hyperextension") || name.includes("back extension")) return exerciseGifs["weighted 45deg hyperextension"];
-    if (name.includes("glute") && name.includes("ham")) return exerciseGifs["glute-ham raise"];
-    if (name.includes("calf") && name.includes("seated")) return exerciseGifs["seated calf raise"];
-    if (name.includes("calf") && name.includes("donkey")) return exerciseGifs["donkey calf raise"];
-    if (name.includes("calf")) return exerciseGifs["standing calf raise"];
-    if (name.includes("dip")) return exerciseGifs["paused assisted dip"];
-    if (name.includes("crunch") || name.includes("ab")) return exerciseGifs["cable crunch"];
-    if (name.includes("leg raise")) return exerciseGifs["roman chair leg raise"];
-    if (name.includes("adduction")) return exerciseGifs["machine hip adduction"];
-    if (name.includes("abduction")) return exerciseGifs["machine hip abduction"];
-    if (name.includes("weak point")) return exerciseGifs["weak point exercise 1"];
-    
-    // Default fallback
-    return "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Curl.gif";
-}
-
-// ===== Exercise Images (Detailed SVG Illustrations) =====
-const exerciseImages = {
-    curl: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="32" cy="10" r="6" fill="#FFD5B5" stroke="#333" stroke-width="1.5"/>
-        <path d="M32 16v14" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M32 30v18" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M26 48l-4 12M38 48l4 12" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M32 20l-8 4l2 10" stroke="#333" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M32 20l8 8v6" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <circle cx="26" cy="34" r="3" fill="#4CAF50"/>
-        <rect x="22" y="32" width="8" height="4" rx="2" fill="#666"/>
-    </svg>`,
-    benchPress: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="8" y="36" width="48" height="6" rx="2" fill="#8B4513"/>
-        <rect x="4" y="42" width="4" height="16" fill="#666"/>
-        <rect x="56" y="42" width="4" height="16" fill="#666"/>
-        <ellipse cx="32" cy="32" rx="6" ry="4" fill="#FFD5B5"/>
-        <path d="M26 32h-12M38 32h12" stroke="#333" stroke-width="2.5"/>
-        <rect x="10" y="28" width="4" height="8" rx="2" fill="#666"/>
-        <rect x="50" y="28" width="4" height="8" rx="2" fill="#666"/>
-        <circle cx="8" cy="32" r="5" fill="#333"/>
-        <circle cx="56" cy="32" r="5" fill="#333"/>
-        <path d="M28 36l-4 8M36 36l4 8" stroke="#333" stroke-width="2"/>
-    </svg>`,
-    squat: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="32" cy="8" r="5" fill="#FFD5B5" stroke="#333" stroke-width="1.5"/>
-        <rect x="20" y="6" width="24" height="4" rx="2" fill="#666"/>
-        <circle cx="18" cy="8" r="4" fill="#333"/>
-        <circle cx="46" cy="8" r="4" fill="#333"/>
-        <path d="M32 13v8" stroke="#333" stroke-width="3"/>
-        <path d="M32 21l-6 12l-4 4v10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M32 21l6 12l4 4v10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M18 57h8M38 57h8" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M26 21l-10 4M38 21l10 4" stroke="#333" stroke-width="2.5"/>
-    </svg>`,
-    row: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="20" cy="16" r="5" fill="#FFD5B5" stroke="#333" stroke-width="1.5"/>
-        <path d="M24 20l20 8" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M44 28l8 20" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M40 48h12" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M52 28l-4 20" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M28 24l-4 14l12 1" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
-        <rect x="8" y="38" width="30" height="3" rx="1.5" fill="#666"/>
-        <circle cx="8" cy="39.5" r="4" fill="#333"/>
-        <circle cx="38" cy="39.5" r="4" fill="#333"/>
-    </svg>`,
-    lateralRaise: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="32" cy="10" r="5" fill="#FFD5B5" stroke="#333" stroke-width="1.5"/>
-        <path d="M32 15v16" stroke="#333" stroke-width="3"/>
-        <path d="M32 31v16" stroke="#333" stroke-width="3"/>
-        <path d="M28 47l-4 12M36 47l4 12" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M32 19l-16 6" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
-        <path d="M32 19l16 6" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
-        <circle cx="16" cy="25" r="4" fill="#4CAF50" stroke="#333"/>
-        <circle cx="48" cy="25" r="4" fill="#4CAF50" stroke="#333"/>
-    </svg>`,
-    tricepExtension: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="32" cy="18" r="5" fill="#FFD5B5" stroke="#333" stroke-width="1.5"/>
-        <path d="M32 23v14" stroke="#333" stroke-width="3"/>
-        <path d="M32 37v14" stroke="#333" stroke-width="3"/>
-        <path d="M28 51l-4 10M36 51l4 10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M28 23l4-12l4 12" stroke="#333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <rect x="28" y="6" width="8" height="6" rx="2" fill="#666"/>
-        <ellipse cx="32" cy="6" rx="6" ry="3" fill="#4CAF50" stroke="#333"/>
-    </svg>`,
-    pulldown: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="28" y="2" width="8" height="4" fill="#666"/>
-        <path d="M12 6h40" stroke="#666" stroke-width="3"/>
-        <circle cx="32" cy="20" r="5" fill="#FFD5B5" stroke="#333" stroke-width="1.5"/>
-        <path d="M32 25v12" stroke="#333" stroke-width="3"/>
-        <rect x="24" y="37" width="16" height="6" rx="2" fill="#8B4513"/>
-        <path d="M28 43v12M36 43v12" stroke="#333" stroke-width="3"/>
-        <path d="M24 55h6M34 55h6" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M14 6l14 10M50 6l-14 10" stroke="#333" stroke-width="2" stroke-linecap="round"/>
-        <rect x="10" y="4" width="6" height="4" rx="1" fill="#333"/>
-        <rect x="48" y="4" width="6" height="4" rx="1" fill="#333"/>
-    </svg>`,
-    legExtension: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="8" y="20" width="32" height="12" rx="3" fill="#8B4513"/>
-        <rect x="4" y="32" width="8" height="24" fill="#666"/>
-        <circle cx="28" cy="18" r="5" fill="#FFD5B5" stroke="#333" stroke-width="1.5"/>
-        <path d="M28 23v9" stroke="#333" stroke-width="3"/>
-        <path d="M40 26l16 16" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M40 32l16 10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <rect x="54" y="38" width="6" height="8" rx="2" fill="#666"/>
-        <path d="M24 23l-8 1M32 23l8 1" stroke="#333" stroke-width="2"/>
-    </svg>`,
-    crunch: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="8" y="40" width="48" height="6" rx="2" fill="#8B4513"/>
-        <circle cx="20" cy="28" r="5" fill="#FFD5B5" stroke="#333" stroke-width="1.5"/>
-        <path d="M24 32l12 8" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M36 40l12-1" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M48 39l8 1" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M18 32l-4 6l6 2" stroke="#333" stroke-width="2" stroke-linecap="round"/>
-    </svg>`,
-    calfRaise: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="32" cy="8" r="5" fill="#FFD5B5" stroke="#333" stroke-width="1.5"/>
-        <path d="M32 13v18" stroke="#333" stroke-width="3"/>
-        <path d="M32 31v12" stroke="#333" stroke-width="3"/>
-        <path d="M28 43v10M36 43v10" stroke="#333" stroke-width="3"/>
-        <rect x="22" y="53" width="20" height="4" rx="2" fill="#666"/>
-        <rect x="18" y="57" width="28" height="4" fill="#8B4513"/>
-        <path d="M28 13l-10 1M36 13l10 1" stroke="#333" stroke-width="2"/>
-        <rect x="14" y="10" width="36" height="4" rx="2" fill="#666"/>
-        <ellipse cx="32" cy="50" rx="4" ry="6" fill="#FFD5B5" stroke="#333"/>
-    </svg>`,
-    deadlift: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="24" cy="12" r="5" fill="#FFD5B5" stroke="#333" stroke-width="1.5"/>
-        <path d="M28 16l14 16" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M42 32l6 16" stroke="#333" stroke-width="3"/>
-        <path d="M36 48h12M50 32l-2 16" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M24 18l-6 16" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
-        <path d="M32 16l6 18" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
-        <rect x="6" y="34" width="32" height="3" rx="1.5" fill="#666"/>
-        <circle cx="6" cy="35.5" r="5" fill="#333"/>
-        <circle cx="38" cy="35.5" r="5" fill="#333"/>
-    </svg>`,
-    dip: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="8" y="20" width="4" height="36" fill="#666"/>
-        <rect x="52" y="20" width="4" height="36" fill="#666"/>
-        <rect x="4" y="18" width="12" height="4" rx="2" fill="#666"/>
-        <rect x="48" y="18" width="12" height="4" rx="2" fill="#666"/>
-        <circle cx="32" cy="16" r="5" fill="#FFD5B5" stroke="#333" stroke-width="1.5"/>
-        <path d="M32 21v12" stroke="#333" stroke-width="3"/>
-        <path d="M28 21l-12-1M36 21l12-1" stroke="#333" stroke-width="2.5"/>
-        <path d="M32 33l-6 10l-4 12" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M32 33l6 10l4 12" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-    </svg>`,
-    fly: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="16" y="32" width="32" height="6" rx="2" fill="#8B4513"/>
-        <ellipse cx="32" cy="28" rx="5" ry="4" fill="#FFD5B5"/>
-        <path d="M32 32v12" stroke="#333" stroke-width="3"/>
-        <path d="M28 44v10M36 44v10" stroke="#333" stroke-width="2.5"/>
-        <path d="M28 28l-16 4" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
-        <path d="M36 28l16 4" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
-        <circle cx="12" cy="32" r="4" fill="#4CAF50" stroke="#333"/>
-        <circle cx="52" cy="32" r="4" fill="#4CAF50" stroke="#333"/>
-    </svg>`,
-    facePull: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="4" y="8" width="4" height="48" fill="#666"/>
-        <rect x="2" y="24" width="8" height="8" rx="2" fill="#333"/>
-        <circle cx="32" cy="20" r="5" fill="#FFD5B5" stroke="#333" stroke-width="1.5"/>
-        <path d="M32 25v14" stroke="#333" stroke-width="3"/>
-        <path d="M32 39v14" stroke="#333" stroke-width="3"/>
-        <path d="M28 53l-4 8M36 53l4 8" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M10 28l18-4" stroke="#666" stroke-width="2"/>
-        <path d="M28 24l-6-1l6-4M36 24l6-1l-6-4" stroke="#333" stroke-width="2" stroke-linecap="round"/>
-    </svg>`,
-    legCurl: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="8" y="28" width="40" height="8" rx="3" fill="#8B4513"/>
-        <rect x="4" y="36" width="8" height="20" fill="#666"/>
-        <circle cx="20" cy="24" r="4" fill="#FFD5B5" stroke="#333" stroke-width="1.5"/>
-        <path d="M20 28h24" stroke="#333" stroke-width="3"/>
-        <path d="M44 28l8-10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M52 18l-4-6" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <rect x="44" y="10" width="8" height="4" rx="2" fill="#666"/>
-        <path d="M16 24l-6 1M24 24l6-1" stroke="#333" stroke-width="2"/>
-    </svg>`,
-    lunge: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="28" cy="8" r="5" fill="#FFD5B5" stroke="#333" stroke-width="1.5"/>
-        <path d="M28 13v12" stroke="#333" stroke-width="3"/>
-        <path d="M28 25l-10 18v12" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M28 25l14 8l6 12" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M14 55h8M44 45l8 10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M24 13l-8 1M32 13l8 1" stroke="#333" stroke-width="2"/>
-        <rect x="12" y="10" width="32" height="4" rx="2" fill="#666"/>
-        <circle cx="10" cy="12" r="4" fill="#333"/>
-        <circle cx="46" cy="12" r="4" fill="#333"/>
-    </svg>`,
-    hipMachine: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="16" y="24" width="32" height="10" rx="3" fill="#8B4513"/>
-        <rect x="12" y="34" width="8" height="20" fill="#666"/>
-        <rect x="44" y="34" width="8" height="20" fill="#666"/>
-        <circle cx="32" cy="18" r="5" fill="#FFD5B5" stroke="#333" stroke-width="1.5"/>
-        <path d="M32 23v11" stroke="#333" stroke-width="3"/>
-        <path d="M28 34l-10 16M36 34l10 16" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-        <path d="M28 18l-6 1M36 18l6 1" stroke="#333" stroke-width="2"/>
-        <path d="M16 50h6M42 50h6" stroke="#333" stroke-width="3"/>
-    </svg>`,
-    target: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="32" cy="32" r="26" stroke="#e74c3c" stroke-width="3" fill="none"/>
-        <circle cx="32" cy="32" r="18" stroke="#e74c3c" stroke-width="2.5" fill="none"/>
-        <circle cx="32" cy="32" r="10" stroke="#e74c3c" stroke-width="2" fill="none"/>
-        <circle cx="32" cy="32" r="4" fill="#e74c3c"/>
-        <path d="M32 2v8M32 54v8M2 32h8M54 32h8" stroke="#e74c3c" stroke-width="2"/>
-    </svg>`,
-    default: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="20" y="28" width="24" height="8" rx="2" fill="#666"/>
-        <rect x="8" y="24" width="14" height="16" rx="3" fill="#333"/>
-        <rect x="42" y="24" width="14" height="16" rx="3" fill="#333"/>
-        <rect x="4" y="22" width="6" height="20" rx="2" fill="#222"/>
-        <rect x="54" y="22" width="6" height="20" rx="2" fill="#222"/>
-    </svg>`
-};
-
-function getExerciseIcon(exerciseName) {
-    const name = exerciseName.toLowerCase();
-    if (name.includes("curl") && name.includes("leg")) return exerciseImages.legCurl;
-    if (name.includes("curl") || name.includes("bicep") || name.includes("preacher") || name.includes("zottman")) return exerciseImages.curl;
-    if (name.includes("bench") || name.includes("chest press") || (name.includes("press") && (name.includes("incline") || name.includes("decline") || name.includes("flat")) && !name.includes("leg"))) return exerciseImages.benchPress;
-    if (name.includes("squat") || name.includes("hack") || name.includes("leg press")) return exerciseImages.squat;
-    if (name.includes("row") || name.includes("t-bar") || name.includes("pull-around")) return exerciseImages.row;
-    if (name.includes("lateral") || name.includes("y-raise") || (name.includes("raise") && !name.includes("calf") && !name.includes("leg"))) return exerciseImages.lateralRaise;
-    if (name.includes("tricep") && (name.includes("extension") || name.includes("overhead"))) return exerciseImages.tricepExtension;
-    if (name.includes("pressdown") || name.includes("pushdown") || name.includes("kickback")) return exerciseImages.tricepExtension;
-    if (name.includes("skull") || name.includes("french press") || name.includes("jm press")) return exerciseImages.tricepExtension;
-    if (name.includes("pulldown") || name.includes("pull-down") || name.includes("lat pull") || name.includes("pull-up") || name.includes("pullup") || name.includes("chin") || name.includes("prayer")) return exerciseImages.pulldown;
-    if (name.includes("leg extension")) return exerciseImages.legExtension;
-    if (name.includes("crunch") || name.includes("ab") || name.includes("rollout") || name.includes("leg raise")) return exerciseImages.crunch;
-    if (name.includes("calf")) return exerciseImages.calfRaise;
-    if (name.includes("rdl") || name.includes("deadlift") || name.includes("hyperextension")) return exerciseImages.deadlift;
-    if (name.includes("dip")) return exerciseImages.dip;
-    if (name.includes("fly") || name.includes("flye") || name.includes("pec deck") || name.includes("crossover")) return exerciseImages.fly;
-    if (name.includes("face pull") || name.includes("reverse flye") || name.includes("reverse pec")) return exerciseImages.facePull;
-    if (name.includes("lunge") || name.includes("step-up") || name.includes("split")) return exerciseImages.lunge;
-    if (name.includes("adduction") || name.includes("abduction") || name.includes("hip thrust")) return exerciseImages.hipMachine;
-    if (name.includes("weak point") || name.includes("target")) return exerciseImages.target;
-    if (name.includes("shoulder") && name.includes("press")) return exerciseImages.lateralRaise;
-    if (name.includes("press")) return exerciseImages.benchPress;
-    return exerciseImages.default;
-}
-
-// ===== Program Structure =====
-// Jeff Nippard's Essentials Program - 5x/Week
-// 12 Weeks, 3 Blocks (exercises change each block)
-// Block 1: Weeks 1-4, Block 2: Weeks 5-8, Block 3: Weeks 9-12
-const TOTAL_WEEKS = 12;
-const SESSIONS_PER_WEEK = 5;
-
-const sessionTypes = {
-    1: { name: "Upper", focus: "Full Upper Body" },
-    2: { name: "Lower", focus: "Full Lower Body" },
-    3: { name: "Push", focus: "Push Muscles" },
-    4: { name: "Pull", focus: "Pull Muscles" },
-    5: { name: "Legs", focus: "Leg Focus" }
-};
-
-function getPhaseInfo(week) {
-    if (week <= 4) {
-        return { block: 1, phaseName: "Block 1", blockName: "Weeks 1-4" };
-    } else if (week <= 8) {
-        return { block: 2, phaseName: "Block 2", blockName: "Weeks 5-8" };
-    } else {
-        return { block: 3, phaseName: "Block 3", blockName: "Weeks 9-12" };
+    if (raw.substitutionOverrides && typeof raw.substitutionOverrides === 'object') {
+        for (const [key, name] of Object.entries(raw.substitutionOverrides)) {
+            if (DATA_KEY_RE.test(key) && typeof name === 'string' && name.trim()) s.substitutionOverrides[key] = name.slice(0, 120);
+        }
     }
-}
-
-// ===== BLOCK 1: Weeks 1-4 =====
-const block1 = {
-    1: [ // Upper
-        { name: "Flat DB Press (Heavy)", sets: 1, reps: "4-6", rest: "~3 min", technique: "RPE 8-9", notes: "Focus on strength here. Each week add weight or reps. Keep form consistent.", sub1: "Machine Chest Press", sub2: "Weighted Dip" },
-        { name: "Flat DB Press (Back off)", sets: 1, reps: "8-10", rest: "~3 min", technique: "RPE 9-10", notes: "Focus on mind-muscle connection with pecs. Drop the weight back and focus on stretch and squeeze!", sub1: "Machine Chest Press", sub2: "Weighted Dip" },
-        { name: "2-Grip Lat Pulldown", sets: 2, reps: "10-12", rest: "~2 min", technique: "RPE 9-10", notes: "Do first set wide overhand (1.5x shoulder width), second set underhand (1x shoulder width)", sub1: "2-Grip Pull-up", sub2: "Machine Pulldown" },
-        { name: "Seated DB Shoulder Press", sets: 2, reps: "10-12", rest: "~2 min", technique: "RPE 9-10", notes: "Bring the dumbbells all the way down, keep your torso upright", sub1: "Machine Shoulder Press", sub2: "Standing DB Arnold Press" },
-        { name: "Seated Cable Row", sets: 2, reps: "10-12", rest: "~2 min", technique: "Dropset", notes: "Focus on squeezing your shoulder blades together, drive your elbows down and back. Last set only do a dropset: perform 10-12 reps, drop the weight by ~50%, perform an additional 10-12 reps.", sub1: "Incline Chest-supported DB Row", sub2: "Chest-Supported T-Bar Row" },
-        { name: "A1: EZ Bar Skull Crusher", sets: 2, reps: "12-15", rest: "0 min", technique: "Superset", notes: "Arc the bar behind your head, constant tension on triceps", sub1: "Overhead Cable Triceps Extension", sub2: "DB French Press" },
-        { name: "A2: EZ Bar Curl", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "Superset", notes: "Arc the bar 'out' not 'up', focus on squeezing your biceps", sub1: "DB Curl", sub2: "Cable EZ Curl" }
-    ],
-    2: [ // Lower
-        { name: "Hack Squat (Heavy)", sets: 1, reps: "4-6", rest: "~3 min", technique: "RPE 8-9", notes: "Focus on strength here. Each week add weight or reps. Keep form consistent.", sub1: "Machine Squat", sub2: "Leg Press" },
-        { name: "Hack Squat (Back off)", sets: 1, reps: "8-10", rest: "~3 min", technique: "RPE 8-9", notes: "Drop the weight back and focus on controlling the negative. Smooth and consistent rep tempo.", sub1: "Machine Squat", sub2: "Leg Press" },
-        { name: "Seated Hamstring Curl", sets: 1, reps: "10-12", rest: "~1.5 min", technique: "Dropset", notes: "Dropset: perform 10-12 reps, drop the weight by ~50%, perform an additional 10-12 reps. Do seated if available.", sub1: "Nordic Ham Curl", sub2: "Lying Leg Curl" },
-        { name: "A1: Standing Calf Raise", sets: 2, reps: "10-12", rest: "0 min", technique: "Superset", notes: "Press all the way up to your toes, stretch your calves at the bottom, don't bounce", sub1: "Seated Calf Raise", sub2: "Leg Press Toe Press" },
-        { name: "A2: Hanging Leg Raise", sets: 2, reps: "10-12", rest: "~1.5 min", technique: "Superset", notes: "Knees to chest, controlled reps, straighten legs more to increase difficulty", sub1: "Roman Chair Crunch", sub2: "Reverse Crunch" }
-    ],
-    3: [ // Push
-        { name: "Machine Shoulder Press", sets: 3, reps: "8-10", rest: "~2 min", technique: "RPE 9-10", notes: "Don't stop in between reps, keep smooth and controlled tension on the delts", sub1: "Seated DB Shoulder Press", sub2: "Standing DB Arnold Press" },
-        { name: "Cable Chest Press", sets: 2, reps: "10-12", rest: "~2 min", technique: "Dropset", notes: "Can be performed seated or standing. Focus on squeezing your chest. Last set only do a dropset: perform 10-12 reps, drop the weight by ~50%, perform an additional 10-12 reps.", sub1: "Weighted Dip", sub2: "Flat DB Press" },
-        { name: "Triceps Pressdown", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "Dropset", notes: "Focus on squeezing your triceps to move the weight. Last set only do a dropset: perform 12-15 reps, drop the weight by ~50%, perform an additional 12-15 reps.", sub1: "Cable Triceps Kickback", sub2: "DB Triceps Kickback" },
-        { name: "Close-Grip Push Up", sets: 1, reps: "Failure", rest: "~1.5 min", technique: "RPE 10", notes: "Hands slightly narrower than shoulder width. Keep your elbows tucked in close to your torso. As many reps as possible!", sub1: "Incline Close-Grip Push Up", sub2: "Kneeling Modified Push Up" },
-        { name: "DB Lateral Raise", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "RPE 10", notes: "Raise the dumbbells 'out' not 'up', mind muscle connection with middle fibers", sub1: "Cable Lateral Raise", sub2: "Machine Lateral Raise" }
-    ],
-    4: [ // Pull
-        { name: "1-Arm Half-Kneeling Lat Pulldown", sets: 1, reps: "10-12", rest: "~1.5 min", technique: "RPE 7-8", notes: "Keep chest tall, keep elbow tucked in close to your torso, focus on squeezing your lat to move the weight", sub1: "Cable Lat Pullover", sub2: "1-Arm Lat Pull-In" },
-        { name: "Weighted Pullup", sets: 3, reps: "6-8", rest: "~2 min", technique: "RPE 9-10", notes: "1.5x shoulder width grip, pull your chest to the bar", sub1: "Lat Pulldown", sub2: "Neutral-Grip Pullup" },
-        { name: "Pendlay Row", sets: 2, reps: "8-10", rest: "~2 min", technique: "RPE 9-10", notes: "Initiate the movement by squeezing your shoulder blades together, pull to your lower chest, avoid using momentum", sub1: "Machine Pendlay Row", sub2: "Seated Cable Row" },
-        { name: "Bayesian Cable Curl", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "RPE 10", notes: "Keep your elbow behind your torso throughout the range of motion, focus on squeezing your bicep. Sets are per arm", sub1: "DB Incline Curl", sub2: "DB Curl" },
-        { name: "Rope Facepull", sets: 2, reps: "10-12", rest: "~1.5 min", technique: "Dropset", notes: "Pull your elbows up and out, squeeze your shoulder blades together. Last set only do a dropset: perform 10-12 reps, drop the weight by ~50%, perform an additional 10-12 reps.", sub1: "Reverse Pec Deck", sub2: "Reverse Cable Flye" }
-    ],
-    5: [ // Legs
-        { name: "Romanian Deadlift", sets: 2, reps: "10-12", rest: "~2 min", technique: "RPE 8-9", notes: "Maintain a neutral lower back, set your hips back, don't allow your spine to round", sub1: "DB Romanian Deadlift", sub2: "45° Hyperextension" },
-        { name: "Leg Press", sets: 3, reps: "10-12", rest: "~2 min", technique: "RPE 8-9", notes: "Medium width feet placement on the platform, don't allow your lower back to round", sub1: "Goblet Squat", sub2: "DB Walking Lunge" },
-        { name: "Leg Extension", sets: 1, reps: "10-12", rest: "~1.5 min", technique: "Dropset", notes: "Dropset: perform 10-12 reps, drop the weight by ~50%, perform an additional 10-12 reps. Focus on squeezing your quads to make the weight move.", sub1: "DB Step-Up", sub2: "Goblet Squat" },
-        { name: "A1: Seated Calf Raise", sets: 2, reps: "12-15", rest: "0 min", technique: "Superset", notes: "Press all the way up to your toes, stretch your calves at the bottom, don't bounce", sub1: "Standing Calf Raise", sub2: "Leg Press Toe Press" },
-        { name: "A2: Cable Crunch", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "Superset", notes: "Round your back as you crunch", sub1: "Machine Crunch", sub2: "Plate-Weighted Crunch" }
-    ]
-};
-
-// ===== BLOCK 2: Weeks 5-8 =====
-const block2 = {
-    1: [ // Upper
-        { name: "2-Grip Pullup", sets: 2, reps: "8-10", rest: "~2 min", technique: "RPE 9-10", notes: "First set 1.5x shoulder width grip. Second set 1.0x shoulder width grip", sub1: "Machine Pulldown", sub2: "2-Grip Lat Pulldown" },
-        { name: "Weighted Dip (Heavy)", sets: 1, reps: "6-8", rest: "~3 min", technique: "RPE 8-9", notes: "Tuck your elbows at 45°, lean your torso forward 15°, shoulder width or slightly wider grip", sub1: "Machine Chest Press", sub2: "Flat DB Press" },
-        { name: "Weighted Dip (Back off)", sets: 1, reps: "10-12", rest: "~3 min", technique: "RPE 9-10", notes: "Tuck your elbows at 45°, lean your torso forward 15°, shoulder width or slightly wider grip", sub1: "Machine Chest Press", sub2: "Flat DB Press" },
-        { name: "Incline Chest-Supported DB Row", sets: 2, reps: "8-10", rest: "~2 min", technique: "RPE 9-10", notes: "Keep elbows at ~30° angle from torso. Pull the weight towards your navel", sub1: "Chest-Supported T-Bar Row", sub2: "Seated Cable Row" },
-        { name: "Standing DB Arnold Press", sets: 2, reps: "8-10", rest: "~2 min", technique: "RPE 9-10", notes: "Start with your elbows in front of you and palms facing in. Rotate the dumbbells so that your palms face forward as you press.", sub1: "Machine Shoulder Press", sub2: "Seated DB Shoulder Press" },
-        { name: "A1: DB Incline Curl", sets: 2, reps: "15-20", rest: "0 min", technique: "Superset", notes: "Brace upper back against bench, 45 degree incline, keep shoulders back as you curl", sub1: "Cable EZ Curl", sub2: "EZ Bar Curl" },
-        { name: "A2: DB French Press", sets: 2, reps: "15-20", rest: "~1.5 min", technique: "Superset", notes: "Can perform seated or standing. Press the dumbbell straight up and down behind your head.", sub1: "Overhead Cable Triceps Extension", sub2: "EZ Bar Skull Crusher" }
-    ],
-    2: [ // Lower
-        { name: "Single-Leg Leg Press (Heavy)", sets: 1, reps: "6-8 per leg", rest: "~3 min", technique: "RPE 8-9", notes: "High and wide foot positioning, start with weaker leg", sub1: "Machine Squat", sub2: "Hack Squat" },
-        { name: "Single-Leg Leg Press (Back off)", sets: 1, reps: "10-12 per leg", rest: "~3 min", technique: "RPE 8-9", notes: "High and wide foot positioning, start with weaker leg", sub1: "Machine Squat", sub2: "Hack Squat" },
-        { name: "Glute-Ham Raise", sets: 1, reps: "10-12", rest: "~1.5 min", technique: "RPE 10", notes: "Keep your hips straight, do Nordic ham curls if no GHR machine", sub1: "Nordic Ham Curl", sub2: "Lying Leg Curl" },
-        { name: "A1: Roman Chair Crunch", sets: 2, reps: "12-15", rest: "0 min", technique: "Superset", notes: "Don't swing your legs at the bottom, minimize momentum, tuck your knees towards your chest if lifting your legs straight out is too challenging", sub1: "Reverse Crunch", sub2: "Hanging Leg Raise" },
-        { name: "A2: Seated Calf Raise", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "Superset", notes: "Press all the way up to your toes, stretch your calves at the bottom, don't bounce", sub1: "Standing Calf Raise", sub2: "Leg Press Toe Press" }
-    ],
-    3: [ // Push
-        { name: "Machine Chest Press", sets: 2, reps: "8-10", rest: "~2 min", technique: "RPE 9-10", notes: "Focus on squeezing your chest", sub1: "Weighted Dip", sub2: "Flat DB Press" },
-        { name: "Seated DB Shoulder Press", sets: 3, reps: "10-12", rest: "~2 min", technique: "RPE 9-10", notes: "Bring the dumbbells all the way down, keep your torso upright", sub1: "Standing DB Arnold Press", sub2: "Machine Shoulder Press" },
-        { name: "Cable Triceps Kickback", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "Dropset", notes: "Lean slightly forward, lock your elbow behind your torso (shoulder hyperextension). Last set only do a dropset: perform 12-15 reps, drop the weight by ~50%, perform an additional 12-15 reps.", sub1: "DB Triceps Kickback", sub2: "Triceps Pressdown" },
-        { name: "Close-Grip Push Up", sets: 1, reps: "Failure", rest: "~1.5 min", technique: "RPE 10", notes: "Hands slightly narrower than shoulder width. Keep your elbows tucked in close to your torso. As many reps as possible!", sub1: "Incline Close-Grip Push Up", sub2: "Kneeling Modified Push Up" },
-        { name: "Cable Lateral Raise", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "RPE 10", notes: "Lean away from the cable. Focus on squeezing your delts.", sub1: "Machine Lateral Raise", sub2: "DB Lateral Raise" }
-    ],
-    4: [ // Pull
-        { name: "1-Arm Half-Kneeling Lat Pulldown", sets: 1, reps: "10-12", rest: "~1.5 min", technique: "RPE 7-8", notes: "Keep chest tall, keep elbow tucked in close to your torso, focus on squeezing your lat to move the weight", sub1: "Cable Lat Pullover", sub2: "1-Arm Lat Pull-In" },
-        { name: "T-Bar Row", sets: 2, reps: "10-12", rest: "~2 min", technique: "RPE 9-10", notes: "Focus on squeezing your shoulder blades together as you pull the weight towards you. Keep your shoulders down (avoid shrugging).", sub1: "Seated Cable Row", sub2: "Pendlay Row" },
-        { name: "Lat Pulldown", sets: 3, reps: "8-10", rest: "~2 min", technique: "Dropset", notes: "Think about pulling your elbows 'down' and 'in'. Last set only do a dropset: perform 8-10 reps, drop the weight by ~50%, perform an additional 8-10 reps.", sub1: "Neutral-Grip Lat Pulldown", sub2: "Weighted Pullup" },
-        { name: "Reverse Pec Deck", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "Dropset", notes: "Swing the weight 'out', not 'back'. Last set only do a dropset: perform 12-15 reps, drop the weight by ~50%, perform an additional 12-15 reps.", sub1: "Reverse Cable Flye", sub2: "Rope Facepull" },
-        { name: "Spider Curl", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "Dropset", notes: "Brace your chest against an incline bench, curl with your elbows slightly in front of you. Last set only do a dropset: perform 12-15 reps, drop the weight by ~50%, perform an additional 12-15 reps.", sub1: "DB Preacher Curl", sub2: "Bayesian Cable Curl" }
-    ],
-    5: [ // Legs
-        { name: "DB Bulgarian Split Squat", sets: 3, reps: "10-12", rest: "~2 min", technique: "RPE 8-9", notes: "Start with your weaker leg. Squat deep", sub1: "Goblet Squat", sub2: "Leg Press" },
-        { name: "DB Romanian Deadlift", sets: 2, reps: "10-12", rest: "~2 min", technique: "RPE 8-9", notes: "Emphasize the stretch in your hamstrings, prevent your lower back from rounding", sub1: "Romanian Deadlift", sub2: "45° Hyperextension" },
-        { name: "Goblet Squat", sets: 1, reps: "12-15", rest: "~1.5 min", technique: "RPE 9-10", notes: "Hold the dumbbell underneath your chin, sit back and down, push your knees out laterally", sub1: "Leg Extension", sub2: "Step-Up" },
-        { name: "A1: Leg Press Toe Press", sets: 2, reps: "15-20", rest: "0 min", technique: "Superset", notes: "Press all the way up to your toes, stretch your calves at the bottom, don't bounce", sub1: "Standing Calf Raise", sub2: "Seated Calf Raise" },
-        { name: "A2: Machine Crunch", sets: 2, reps: "10-12", rest: "~1.5 min", technique: "Superset", notes: "Squeeze your abs to move the weight, don't use your arms to help", sub1: "Plate-Weighted Crunch", sub2: "Cable Crunch" }
-    ]
-};
-
-// ===== BLOCK 3: Weeks 9-12 =====
-const block3 = {
-    1: [ // Upper
-        { name: "Machine Chest Press (Heavy)", sets: 1, reps: "4-6", rest: "~3 min", technique: "RPE 8-9", notes: "Focus on squeezing your chest", sub1: "Flat DB Press", sub2: "Weighted Dip" },
-        { name: "Machine Chest Press (Back off)", sets: 1, reps: "8-10", rest: "~3 min", technique: "RPE 9-10", notes: "Focus on squeezing your chest", sub1: "Flat DB Press", sub2: "Weighted Dip" },
-        { name: "Machine Pulldown", sets: 2, reps: "10-12", rest: "~2 min", technique: "Dropset", notes: "Think about pulling your elbows 'down' and 'in'. Last set only do a dropset: perform 10-12 reps, drop the weight by ~50%, perform an additional 10-12 reps.", sub1: "2-Grip Lat Pulldown", sub2: "Weighted Pullup" },
-        { name: "Cable Shoulder Press", sets: 2, reps: "12-15", rest: "~2 min", technique: "Dropset", notes: "Bring cables all the way down to shoulder height, keep torso upright. Last set only do a dropset: perform 12-15 reps, drop the weight by ~50%, perform an additional 12-15 reps.", sub1: "Machine Shoulder Press", sub2: "Seated DB Shoulder Press" },
-        { name: "Helms DB Row", sets: 2, reps: "10-12", rest: "~2 min", technique: "RPE 9-10", notes: "Be ultra strict with form, drive elbows out and back at 45 degree angle", sub1: "Chest-Supported T-Bar Row", sub2: "Machine Row" },
-        { name: "A1: Overhead Cable Triceps Extension", sets: 2, reps: "12-15", rest: "0 min", technique: "Superset", notes: "Do both arms at once, resist the negative", sub1: "EZ Bar Skull Crusher", sub2: "DB French Press" },
-        { name: "A2: Cable EZ Curl", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "Superset", notes: "Focus on squeezing your biceps. Control the negative", sub1: "EZ Bar Curl", sub2: "DB Curl" }
-    ],
-    2: [ // Lower
-        { name: "Machine Squat (Heavy)", sets: 1, reps: "4-6", rest: "~3 min", technique: "RPE 8-9", notes: "Focus on strength here. Each week add weight or reps. Keep form consistent.", sub1: "Hack Squat", sub2: "Leg Press" },
-        { name: "Machine Squat (Back off)", sets: 1, reps: "8-10", rest: "~3 min", technique: "RPE 8-9", notes: "Drop the weight back and focus on controlling the negative. Smooth and consistent rep tempo.", sub1: "Hack Squat", sub2: "Leg Press" },
-        { name: "Nordic Ham Curl", sets: 1, reps: "8-10", rest: "~1.5 min", technique: "RPE 10", notes: "Keep your hips as straight as you can, can sub for lying leg curl", sub1: "Lying Leg Curl", sub2: "Glute-Ham Raise" },
-        { name: "A1: Seated Calf Raise", sets: 2, reps: "10-12", rest: "0 min", technique: "Superset", notes: "Press all the way up to your toes, stretch your calves at the bottom, don't bounce", sub1: "Standing Calf Raise", sub2: "Leg Press Toe Press" },
-        { name: "A2: Two-Arms Two-Legs Dead Bug", sets: 2, reps: "10-12", rest: "~1.5 min", technique: "Superset", notes: "Perform these slowly, focus on keeping your lower back against the ground throughout the set", sub1: "Reverse Crunch", sub2: "Roman Chair Crunch" }
-    ],
-    3: [ // Push
-        { name: "Standing DB Arnold Press", sets: 2, reps: "10-12", rest: "~2 min", technique: "RPE 9-10", notes: "Start with your elbows in front of you and palms facing in. Rotate the dumbbells so that your palms face forward as you press.", sub1: "Seated DB Shoulder Press", sub2: "Machine Shoulder Press" },
-        { name: "Cable Chest Press", sets: 2, reps: "10-12", rest: "~2 min", technique: "Dropset", notes: "Can be performed seated or standing. Focus on squeezing your chest. Last set only do a dropset: perform 10-12 reps, drop the weight by ~50%, perform an additional 10-12 reps.", sub1: "Weighted Dip", sub2: "Flat DB Press" },
-        { name: "DB Triceps Kickback", sets: 2, reps: "10-12", rest: "~1.5 min", technique: "Dropset", notes: "Lean slightly forward, lock your elbow behind your torso (shoulder hyperextension). Last set only do a dropset: perform 10-12 reps, drop the weight by ~50%, perform an additional 10-12 reps.", sub1: "Triceps Pressdown", sub2: "Cable Triceps Kickback" },
-        { name: "Close-Grip Push Up", sets: 1, reps: "Failure", rest: "~1.5 min", technique: "RPE 10", notes: "Hands slightly narrower than shoulder width. Keep your elbows tucked in close to your torso. As many reps as possible!", sub1: "Incline Close-Grip Push Up", sub2: "Kneeling Modified Push Up" },
-        { name: "Machine Lateral Raise", sets: 2, reps: "10-12", rest: "~1.5 min", technique: "RPE 10", notes: "Focus on squeezing your lateral delt to move the weight", sub1: "DB Lateral Raise", sub2: "Cable Lateral Raise" }
-    ],
-    4: [ // Pull
-        { name: "1-Arm Half-Kneeling Lat Pulldown", sets: 1, reps: "10-12", rest: "~1.5 min", technique: "RPE 7-8", notes: "Keep chest tall, keep elbow tucked in close to your torso, focus on squeezing your lat to move the weight", sub1: "Cable Lat Pullover", sub2: "1-Arm Lat Pull-In" },
-        { name: "Neutral-Grip Lat Pulldown", sets: 3, reps: "8-10", rest: "~2 min", technique: "Dropset", notes: "Pull your elbows down against your sides. Last set only do a dropset: perform 8-10 reps, drop the weight by ~50%, perform an additional 8-10 reps.", sub1: "Weighted Pullup", sub2: "Lat Pulldown" },
-        { name: "Meadows Row", sets: 2, reps: "10-12", rest: "~2 min", technique: "RPE 9-10", notes: "Brace with your non-working hand against your knee, stay light, emphasize form", sub1: "Single-Arm DB Row", sub2: "Pendlay Row" },
-        { name: "Inverse Zottman Curl", sets: 2, reps: "10-12", rest: "~1.5 min", technique: "Dropset", notes: "Hammer curl on concentric, supinated curl (palms up) on the eccentric. Last set only do a dropset: perform 10-12 reps, drop the weight by ~50%, perform an additional 10-12 reps.", sub1: "Hammer Curl", sub2: "DB Curl" },
-        { name: "Bent-Over Reverse DB Flye", sets: 2, reps: "15-20", rest: "~1.5 min", technique: "RPE 10", notes: "Mind-muscle connection with rear delts, sweep the weight out", sub1: "Reverse Cable Flye", sub2: "Rope Facepull" }
-    ],
-    5: [ // Legs
-        { name: "Romanian Deadlift", sets: 2, reps: "10-12", rest: "~2 min", technique: "RPE 8-9", notes: "Maintain a neutral lower back, set your hips back, don't allow your spine to round", sub1: "DB Romanian Deadlift", sub2: "45° Hyperextension" },
-        { name: "DB Walking Lunge", sets: 3, reps: "8-10", rest: "~2 min", technique: "RPE 8-9", notes: "Take medium strides, minimize the amount you push off your rear leg", sub1: "DB Step-Up", sub2: "DB Bulgarian Split Squat" },
-        { name: "Leg Extension", sets: 1, reps: "12-15", rest: "~1.5 min", technique: "Dropset", notes: "Dropset: perform 12-15 reps, drop the weight by ~50%, perform an additional 12-15 reps. Focus on squeezing your quads to make the weight move.", sub1: "Goblet Squat", sub2: "DB Step-Up" },
-        { name: "A1: Standing Calf Raise", sets: 2, reps: "15-20", rest: "0 min", technique: "Superset", notes: "Press all the way up to your toes, stretch your calves at the bottom, don't bounce", sub1: "Seated Calf Raise", sub2: "Leg Press Toe Press" },
-        { name: "A2: Plate-Weighted Crunch", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "Superset", notes: "Hold a plate or DB to your chest and crunch hard!", sub1: "Cable Crunch", sub2: "Machine Crunch" }
-    ]
-};
-
-const warmupSetsByBlock = {
-    1: {
-        "Flat DB Press (Heavy)": "2-3",
-        "Flat DB Press (Back off)": "0",
-        "2-Grip Lat Pulldown": "2",
-        "Seated DB Shoulder Press": "1",
-        "Seated Cable Row": "1",
-        "A1: EZ Bar Skull Crusher": "1",
-        "A2: EZ Bar Curl": "1",
-        "Hack Squat (Heavy)": "2-3",
-        "Hack Squat (Back off)": "0",
-        "Seated Hamstring Curl": "1",
-        "A1: Standing Calf Raise": "1",
-        "A2: Hanging Leg Raise": "1",
-        "Machine Shoulder Press": "2",
-        "Cable Chest Press": "2",
-        "Triceps Pressdown": "1",
-        "Close-Grip Push Up": "1",
-        "DB Lateral Raise": "1",
-        "1-Arm Half-Kneeling Lat Pulldown": "1",
-        "Weighted Pullup": "2",
-        "Pendlay Row": "2",
-        "Bayesian Cable Curl": "1",
-        "Rope Facepull": "1",
-        "Romanian Deadlift": "2",
-        "Leg Press": "2",
-        "Leg Extension": "1",
-        "A1: Seated Calf Raise": "1",
-        "A2: Cable Crunch": "1"
-    },
-    2: {
-        "2-Grip Pullup": "1-1",
-        "Weighted Dip (Heavy)": "2-3",
-        "Weighted Dip (Back off)": "0",
-        "Incline Chest-Supported DB Row": "1",
-        "Standing DB Arnold Press": "1",
-        "A1: DB Incline Curl": "1",
-        "A2: DB French Press": "1",
-        "Single-Leg Leg Press (Heavy)": "2-3",
-        "Single-Leg Leg Press (Back off)": "0",
-        "Glute-Ham Raise": "1",
-        "A1: Roman Chair Crunch": "1",
-        "A2: Seated Calf Raise": "1",
-        "Machine Chest Press": "2",
-        "Seated DB Shoulder Press": "2",
-        "Cable Triceps Kickback": "1",
-        "Close-Grip Push Up": "1",
-        "Cable Lateral Raise": "1",
-        "1-Arm Half-Kneeling Lat Pulldown": "1",
-        "T-Bar Row": "2",
-        "Lat Pulldown": "2",
-        "Reverse Pec Deck": "1",
-        "Spider Curl": "1",
-        "DB Bulgarian Split Squat": "2",
-        "DB Romanian Deadlift": "2",
-        "Goblet Squat": "1",
-        "A1: Leg Press Toe Press": "1",
-        "A2: Machine Crunch": "1"
-    },
-    3: {
-        "Machine Chest Press (Heavy)": "2-3",
-        "Machine Chest Press (Back off)": "0",
-        "Machine Pulldown": "2",
-        "Cable Shoulder Press": "1",
-        "Helms DB Row": "1",
-        "A1: Overhead Cable Triceps Extension": "1",
-        "A2: Cable EZ Curl": "1",
-        "Machine Squat (Heavy)": "2-3",
-        "Machine Squat (Back off)": "0",
-        "Nordic Ham Curl": "1",
-        "A1: Seated Calf Raise": "1",
-        "A2: Two-Arms Two-Legs Dead Bug": "1",
-        "Standing DB Arnold Press": "2",
-        "Cable Chest Press": "2",
-        "DB Triceps Kickback": "1",
-        "Close-Grip Push Up": "1",
-        "Machine Lateral Raise": "1",
-        "1-Arm Half-Kneeling Lat Pulldown": "1",
-        "Neutral-Grip Lat Pulldown": "2",
-        "Meadows Row": "2",
-        "Inverse Zottman Curl": "1",
-        "Bent-Over Reverse DB Flye": "1",
-        "Romanian Deadlift": "2",
-        "DB Walking Lunge": "2",
-        "Leg Extension": "1",
-        "A1: Standing Calf Raise": "1",
-        "A2: Plate-Weighted Crunch": "1"
+    if (['workout', 'progress', 'guide'].includes(raw.activeTab)) s.activeTab = raw.activeTab;
+    else if (raw.activeTab === 'tips' || raw.activeTab === 'warmup') s.activeTab = 'guide';
+    if (Number.isFinite(raw.lastSavedAt)) s.lastSavedAt = raw.lastSavedAt;
+    if (Number.isFinite(raw.lastBackupAt)) s.lastBackupAt = raw.lastBackupAt;
+    if (raw.prefs && typeof raw.prefs === 'object') {
+        for (const k of ['sound', 'vibrate', 'keepAwake']) if (typeof raw.prefs[k] === 'boolean') s.prefs[k] = raw.prefs[k];
+        if (raw.prefs.steps && typeof raw.prefs.steps === 'object') {
+            for (const [k, v] of Object.entries(raw.prefs.steps)) if (WEIGHT_STEPS.includes(v)) s.prefs.steps[k] = v;
+        }
     }
-};
-
-function getWarmupSetsForExercise(week, exerciseName) {
-    const block = week <= 4 ? 1 : week <= 8 ? 2 : 3;
-    return warmupSetsByBlock[block]?.[exerciseName] ?? null;
+    const t = raw.timer;
+    if (t && Number.isFinite(t.endsAt) && t.endsAt > Date.now() && t.endsAt < Date.now() + 3600000 && Number.isFinite(t.duration)) {
+        s.timer = { endsAt: t.endsAt, duration: t.duration, label: String(t.label || ''), ref: t.ref && typeof t.ref === 'object' ? t.ref : null };
+    }
+    if (raw.warmup && typeof raw.warmup.date === 'string' && Array.isArray(raw.warmup.done)) {
+        s.warmup = { date: raw.warmup.date, done: raw.warmup.done.filter((x) => typeof x === 'string') };
+    }
+    if (raw.dismissed && typeof raw.dismissed === 'object') {
+        for (const [k, v] of Object.entries(raw.dismissed)) if (v === true) s.dismissed[k] = true;
+    }
+    return s;
 }
 
-function getExercisesForWeek(week, session) {
-    if (week <= 4) return block1[session] || [];
-    if (week <= 8) return block2[session] || [];
-    return block3[session] || [];
-}
-
-// ===== State Management =====
-const APP_VERSION = '2.0.0';
-const GIF_CACHE = 'gif-cache-v1'; // must match sw.js
-const STORAGE_KEY = 'nippardEssentials5x_12weeks_v1';
-const defaultState = {
-    currentWeek: 1,
-    currentSession: 1,
-    currentExercise: null,
-    currentSetIndex: 0,
-    workoutData: {},
-    substitutionOverrides: {},
-    activeTab: 'workout',
-    lastSavedAt: 0
-};
-let state = { ...defaultState };
-
-function normalizeState(loaded) {
-    if (!loaded || typeof loaded !== 'object') return { ...defaultState };
-    const merged = { ...defaultState, ...loaded };
-    // Transient modal state must never survive a load/import
-    merged.currentExercise = null;
-    merged.currentSetIndex = 0;
-    return merged;
-}
+let unreadableText = null; // saved data that failed to parse this launch (offered as a download)
 
 function loadState() {
+    let text = null;
+    try { text = localStorage.getItem(STORAGE_KEY); } catch (e) { console.error('Storage unavailable', e); }
+    if (!text) return defaultState();
+    let raw;
     try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) state = normalizeState(JSON.parse(saved));
-    } catch (e) { console.error('Error loading local state:', e); }
+        raw = JSON.parse(text);
+    } catch (e) {
+        // Never overwrite data we can't read - park one copy under a side key first
+        unreadableText = text;
+        try {
+            const prefix = `${STORAGE_KEY}_unreadable_`;
+            const parked = Object.keys(localStorage).some((k) => k.startsWith(prefix) && localStorage.getItem(k) === text);
+            if (!parked) localStorage.setItem(prefix + Date.now(), text);
+        } catch (_) { /* full - the download offered at start-up still has it */ }
+        console.error('Saved data was unreadable and has been set aside', e);
+        return defaultState();
+    }
+    // First launch after the v3 upgrade: keep an untouched copy of the old data
+    if (raw && !raw.appVersion && raw.workoutData) {
+        try { if (!localStorage.getItem(PRE_V3_BACKUP_KEY)) localStorage.setItem(PRE_V3_BACKUP_KEY, text); } catch (_) { /* full */ }
+    }
+    return normalizeState(raw);
 }
+
+let state = defaultState();
+let saveFailed = false;
 
 function saveState() {
     state.lastSavedAt = Date.now();
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    catch (e) { console.error('Error saving local state:', e); }
-}
-
-// Weight 0 means a bodyweight set (e.g. push-ups to failure)
-function formatSet(weight, reps) {
-    return weight === 0 ? `BW x ${reps}` : `${weight}kg x ${reps}`;
-}
-
-// Last week's same set index, falling back to last week's heaviest set
-function getLastWeekSetFor(lastWeekData, setIndex) {
-    if (!lastWeekData?.sets?.length) return null;
-    return lastWeekData.sets[setIndex]
-        || lastWeekData.sets.reduce((max, s) => (s.weight > max.weight) ? s : max, lastWeekData.sets[0]);
-}
-
-// ===== Backup: Export / Import =====
-function exportData(filenamePrefix = 'gym-tracker-backup') {
-    const date = new Date().toISOString().slice(0, 10);
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${filenamePrefix}-${date}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function importData(file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-        try {
-            const parsed = JSON.parse(reader.result);
-            const valid = parsed && typeof parsed === 'object'
-                && parsed.workoutData && typeof parsed.workoutData === 'object'
-                && Object.keys(parsed.workoutData).every(k => /^w\d+_s\d+_/.test(k));
-            if (!valid) {
-                showToast('Not a valid backup file');
-                return;
-            }
-            // Don't let a bad import silently destroy current data
-            const hasLoggedSets = Object.values(state.workoutData).some(d => d.sets && d.sets.length > 0);
-            if (hasLoggedSets) exportData('gym-tracker-pre-import');
-            state = normalizeState(parsed);
-            saveState();
-            renderWeekDisplay();
-            renderExercises();
-            renderProgress();
-            closeSettings();
-            showToast('Data imported');
-        } catch (e) {
-            showToast('Could not read backup file');
-        }
-    };
-    reader.readAsText(file);
-}
-
-// ===== Persistent Storage =====
-function requestPersistentStorage() {
-    if (navigator.storage?.persist) {
-        navigator.storage.persist().catch(() => {});
+    state.appVersion = APP_VERSION;
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        if (saveFailed) { saveFailed = false; hideBanner('save'); }
+        return true;
+    } catch (e) {
+        console.error('Save failed', e);
+        saveFailed = true;
+        showBanner('save', "Couldn't save on this phone. Export a backup so nothing is lost.", 'Export', () => exportBackup(), true);
+        return false;
     }
+}
+
+const dataKey = (week, session, name) => `w${week}_s${session}_${name}`;
+function getEntry(week, session, name) {
+    return state.workoutData[dataKey(week, session, name)] || { sets: [] }; // { sets: [{ weight, reps, t, as? }] }
+}
+function putEntry(week, session, name, entry) {
+    const key = dataKey(week, session, name);
+    if (entry.sets.length) state.workoutData[key] = entry;
+    else delete state.workoutData[key];
+}
+function shownName(week, session, ex) {
+    return state.substitutionOverrides[dataKey(week, session, ex.name)] || ex.name;
+}
+
+// "Last time" for this slot: the most recent earlier week with sets done as `shown` (the
+// exercise on screen now), returning only those sets - a swapped week never counts as the
+// same exercise. Keys contain the exact exercise name, so this also reaches an exercise that
+// repeats in an earlier block (same session, same name).
+function previousEntry(week, session, ex, shown = shownName(week, session, ex)) {
+    for (let w = week - 1; w >= 1; w--) {
+        const e = state.workoutData[dataKey(w, session, ex.name)];
+        const sets = e ? e.sets.filter((s) => doneAs(s, ex) === shown) : [];
+        if (sets.length) return { week: w, sets };
+    }
+    return null;
+}
+
+function sessionProgress(week, session) {
+    const list = exercisesFor(week, session);
+    let target = 0, done = 0, logged = 0, volume = 0, finished = 0, lastT = 0;
+    for (const ex of list) {
+        const sets = getEntry(week, session, ex.name).sets;
+        target += ex.sets;
+        done += Math.min(sets.length, ex.sets);
+        logged += sets.length;
+        if (sets.length >= ex.sets) finished++;
+        for (const s of sets) {
+            volume += s.weight * s.reps;
+            if (s.t > lastT) lastT = s.t;
+        }
+    }
+    return { target, done, logged, volume, lastT, exercises: list.length, started: logged > 0, complete: list.length > 0 && finished === list.length };
+}
+
+function countSets(st = state) {
+    return Object.values(st.workoutData).reduce((n, e) => n + e.sets.length, 0);
+}
+function backupStale() {
+    return countSets() >= 10 && (!state.lastBackupAt || Date.now() - state.lastBackupAt > BACKUP_STALE_DAYS * DAY);
+}
+
+// Which exercise should come next after `index` (superset-aware)? null = session finished
+function nextUp(week, session, index) {
+    const list = exercisesFor(week, session);
+    const done = (i) => getEntry(week, session, list[i].name).sets.length;
+    const ex = list[index];
+    const tag = parseName(ex.name).superset;
+    if (tag) {
+        const partnerIdx = tag === 'A1' ? index + 1 : index - 1;
+        const partner = list[partnerIdx];
+        if (partner && parseName(partner.name).superset) {
+            if (tag === 'A1' && done(partnerIdx) < done(index) && done(partnerIdx) < partner.sets) return partnerIdx;
+            if (tag !== 'A1' && done(partnerIdx) < partner.sets && done(partnerIdx) <= done(index)) return partnerIdx;
+        }
+    }
+    if (done(index) < ex.sets) return index;
+    for (let k = 1; k < list.length; k++) {
+        const j = (index + k) % list.length;
+        if (done(j) < list[j].sets) return j;
+    }
+    return null;
+}
+
+// ===== Transient UI state =====
+const ui = {
+    sheet: null,         // { week, session, index, active, draft, demoKey, startedComplete }
+    progressBlock: null, // block shown in the exercise-progress card
+    openHistory: new Set(),
+    showVolumeTable: false,
+    listDirty: false,
+    mediaBusy: false,
+    mediaStatus: '',
+    cuesOpen: true,      // remembered open/closed state of the sheet's <details> sections
+    warmupOpen: false,
+    inputLockUntil: 0    // ignore repeat taps on logging controls until this time (double-tap guard)
+};
+
+// ===== Rendering: shell =====
+function render() {
+    renderTopbar();
+    renderNav();
+    renderView();
+    renderRest();
+    if (ui.sheet) renderExerciseSheet();
+}
+
+function renderTopbar() {
+    const week = state.currentWeek;
+    $('#week-main').textContent = `Week ${week}`;
+    $('#week-sub').textContent = `of ${TOTAL_WEEKS} · Block ${blockOf(week)}`;
+    $('[data-action="week-prev"]').disabled = week <= 1;
+    $('[data-action="week-next"]').disabled = week >= TOTAL_WEEKS;
+    $('#settings-dot').hidden = !backupStale();
+}
+
+function renderNav() {
+    $$('.nav-btn').forEach((b) => {
+        const active = b.dataset.tab === state.activeTab;
+        b.classList.toggle('is-active', active);
+        if (active) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+    document.body.classList.toggle('view-workout-hidden', state.activeTab !== 'workout');
+}
+
+function renderView() {
+    for (const tab of ['workout', 'progress', 'guide']) $(`#view-${tab}`).hidden = tab !== state.activeTab;
+    if (state.activeTab === 'workout') { renderSessionTabs(); renderWorkout(); }
+    else if (state.activeTab === 'progress') renderProgress();
+    else renderWarmup();
+}
+
+// ===== Workout view =====
+function renderSessionTabs() {
+    const week = state.currentWeek;
+    $('#session-tabs').innerHTML = SESSIONS.map((s) => {
+        const p = sessionProgress(week, s);
+        const active = s === state.currentSession;
+        const cls = ['stab', active && 'is-active', p.complete && 'is-done', !p.complete && p.started && 'is-started'].filter(Boolean).join(' ');
+        const meta = p.complete ? `${icon('check', 'icon-xs')}Done` : p.started ? `${p.done}/${p.target}` : `${p.target} sets`;
+        return `<button class="${cls}" data-action="session" data-session="${s}" aria-pressed="${active}">
+            <span class="stab-name">${esc(sessionName(s))}</span><span class="stab-meta">${meta}</span></button>`;
+    }).join('');
+}
+
+function thumbHtml(move, label, cls = 'thumb') {
+    if (move && move.gif) {
+        return `<span class="${cls}"><img src="${esc(move.gif)}" alt="" loading="lazy" decoding="async" data-fallback="${esc(move.muscle || '')}"></span>`;
+    }
+    return `<span class="${cls} is-placeholder" aria-hidden="true"><span class="placeholder-inner">${icon('dumbbell')}${esc(move?.muscle || label || '')}</span></span>`;
+}
+
+function renderWorkout() {
+    const week = state.currentWeek;
+    const session = state.currentSession;
+    const list = exercisesFor(week, session);
+    const p = sessionProgress(week, session);
+    const firstOpen = list.findIndex((ex) => getEntry(week, session, ex.name).sets.length < ex.sets);
+    // Highlight what the sheet would suggest next (A1 -> A2 within a superset round)
+    const nextIdx = firstOpen >= 0 ? (nextUp(week, session, firstOpen) ?? firstOpen) : -1;
+
+    let html = `
+        <section class="hero">
+            <div class="hero-row">
+                <div>
+                    <p class="eyebrow">Week ${week} · Block ${blockOf(week)}</p>
+                    <h1 class="hero-title">${esc(sessionName(session))}</h1>
+                    <p class="hero-sub">${esc(PROGRAM.sessions[session]?.focus || '')} · ${plural(list.length, 'exercise')}</p>
+                </div>
+                <div class="hero-count"><strong>${p.done}</strong><span>/ ${p.target} sets</span></div>
+            </div>
+            <div class="meter ${p.complete ? 'is-done' : ''}" role="progressbar" aria-label="Sets done" aria-valuemin="0" aria-valuemax="${p.target}" aria-valuenow="${p.done}"><span style="--p:${p.target ? (p.done / p.target) * 100 : 0}%"></span></div>
+        </section>`;
+
+    if (!countSets() && !state.dismissed.welcome) {
+        html += `<div class="tip-card">${icon('info')}<div><strong>Tap an exercise to log it.</strong> Last week's numbers are filled in for you, and a rest timer starts after every set. Everything is saved on this phone.</div>
+            <button class="icon-btn" data-action="dismiss" data-key="welcome" aria-label="Dismiss">${icon('x', 'icon-sm')}</button></div>`;
+    }
+
+    html += '<div class="ex-list">';
+    for (let i = 0; i < list.length; i++) {
+        const next = list[i + 1];
+        if (parseName(list[i].name).superset === 'A1' && next && parseName(next.name).superset) {
+            html += `<div class="superset" role="group" aria-label="Superset">
+                <div class="superset-head">${icon('swap')}Superset <span>· alternate sets, rest after both</span></div>
+                ${exerciseCard(week, session, i, nextIdx, p.started)}${exerciseCard(week, session, i + 1, nextIdx, p.started)}</div>`;
+            i++;
+        } else {
+            html += exerciseCard(week, session, i, nextIdx, p.started);
+        }
+    }
+    html += '</div>';
+    if (p.complete) html += sessionDoneCard(week, session, p);
+    $('#view-workout').innerHTML = html;
+    ui.listDirty = false;
+}
+
+function exerciseCard(week, session, i, nextIdx, sessionStarted) {
+    const ex = exercisesFor(week, session)[i];
+    const orig = parseName(ex.name);
+    const shown = shownName(week, session, ex);
+    const cur = parseName(shown);
+    const sets = getEntry(week, session, ex.name).sets;
+    const done = sets.length >= ex.sets;
+    const prev = previousEntry(week, session, ex, shown);
+    const tech = techniqueInfo(ex.technique);
+
+    const tags = [];
+    if (orig.superset) tags.push(`<span class="tag tag-super">${esc(orig.superset)}</span>`);
+    if (orig.setTag === 'heavy') tags.push('<span class="tag tag-heavy">Top set</span>');
+    if (orig.setTag === 'backoff') tags.push('<span class="tag">Back-off</span>');
+    if (shown !== ex.name) tags.push(`<span class="tag tag-swap">${icon('swap', 'icon-xs')}Swapped</span>`);
+
+    const chips = [];
+    const count = Math.max(ex.sets, sets.length);
+    for (let k = 0; k < count; k++) {
+        chips.push(sets[k]
+            ? `<span class="set-chip is-done">${esc(fmtSetShort(sets[k]))}</span>`
+            : `<span class="set-chip">${k + 1}</span>`);
+    }
+    const target = [`${ex.sets} × ${range(ex.reps)}`];
+    if (tech.kind !== 'super') target.push(tech.label);
+    target.push(restText(ex.rest));
+
+    let last = '';
+    if (prev) {
+        const b = bestSet(prev.sets);
+        last = `<span class="ex-last">${prev.week === week - 1 ? 'Last week' : `Week ${prev.week}`}: <strong>${esc(fmtSet(b))}</strong></span>`;
+    }
+    const pct = Math.min(100, (sets.length / ex.sets) * 100);
+    const status = done
+        ? `<span class="ring is-done" aria-label="Done">${icon('check')}</span>`
+        : `<span class="ring" aria-label="${sets.length} of ${ex.sets} sets"><svg class="ring-svg" viewBox="0 0 40 40" aria-hidden="true"><circle class="ring-track" cx="20" cy="20" r="17"/>${pct > 0 ? `<circle class="ring-fill" cx="20" cy="20" r="17" pathLength="100" stroke-dasharray="${pct} 100"/>` : ''}</svg><span class="ring-text">${sets.length}/${ex.sets}</span></span>`;
+    const isNext = sessionStarted && i === nextIdx;
+
+    return `<button class="ex-card ${done ? 'is-done' : ''} ${isNext ? 'is-next' : ''}" data-action="open-exercise" data-index="${i}">
+        ${thumbHtml(moveFor(shown), cur.base)}
+        <span class="ex-body">
+            <span class="ex-tags">${tags.join('')}</span>
+            <span class="ex-name">${esc(cur.base)}</span>
+            <span class="ex-target">${esc(target.join(' · '))}</span>
+            <span class="ex-chips">${chips.join('')}</span>
+            ${last}
+        </span>
+        ${status}
+    </button>`;
+}
+
+function sessionDoneCard(week, session, p) {
+    const nextSession = SESSIONS.find((s) => s !== session && !sessionProgress(week, s).complete);
+    let action;
+    if (nextSession) {
+        action = `<button class="btn btn-primary btn-block" data-action="session" data-session="${nextSession}">Next: ${esc(sessionName(nextSession))} ${icon('arrow-right')}</button>`;
+    } else if (week < TOTAL_WEEKS) {
+        action = `<button class="btn btn-primary btn-block" data-action="start-week">Week ${week} done · start week ${week + 1} ${icon('arrow-right')}</button>`;
+    } else {
+        action = '<p><strong>That was the final session of the program. Massive work!</strong></p>';
+    }
+    return `<section class="done-card">
+        <div class="done-badge">${icon('check')}</div>
+        <h2>${esc(sessionName(session))} complete</h2>
+        <p>${plural(p.logged, 'set')} · ${fmtInt(p.volume)} kg lifted</p>
+        ${action}
+    </section>`;
+}
+
+// ===== Exercise sheet =====
+function currentExercise() {
+    const sh = ui.sheet;
+    return sh ? exercisesFor(sh.week, sh.session)[sh.index] : null;
+}
+
+function openExercise(week, session, index) {
+    const ex = exercisesFor(week, session)[index];
+    if (!ex) return;
+    dismissToast(); // an Undo for another exercise must not follow into this sheet
+    const n = getEntry(week, session, ex.name).sets.length;
+    ui.sheet = {
+        week, session, index, active: n < ex.sets ? n : null, draft: null, demoKey: null,
+        startedComplete: sessionProgress(week, session).complete
+    };
+    renderExerciseSheet();
+    const dialog = $('#exercise-sheet');
+    openSheet(dialog);
+    $('#sx-scroll').scrollTop = 0;
+    requestAnimationFrame(revealActiveRow);
+}
+
+function switchExercise(index) {
+    const sh = ui.sheet;
+    const ex = exercisesFor(sh.week, sh.session)[index];
+    if (!ex) return;
+    dismissToast(); // an Undo toast would otherwise act on the exercise we just left
+    const n = getEntry(sh.week, sh.session, ex.name).sets.length;
+    Object.assign(sh, { index, active: n < ex.sets ? n : null, draft: null });
+    renderExerciseSheet();
+    $('#sx-scroll').scrollTop = 0;
+    requestAnimationFrame(revealActiveRow);
+}
+
+// On short screens the set table can sit below the fold: bring the active row into view
+function revealActiveRow() {
+    const scroll = $('#sx-scroll');
+    const row = $('#sx-sets .set-row.is-active') || $('#sx-sets .set-row:last-child');
+    if (!scroll || !row) return;
+    const box = scroll.getBoundingClientRect();
+    const r = row.getBoundingClientRect();
+    if (r.top > box.bottom - 24) scroll.scrollTop += r.bottom - box.bottom + 12;
+}
+
+function stepFor(name) {
+    return state.prefs.steps[normalizeExerciseName(name)] || DEFAULT_STEP;
+}
+
+// Values to pre-fill for set `index`: the set itself (editing), else today's previous set of
+// this exercise, else last time's same set, else last time's best set.
+function prefillFor(week, session, ex, index) {
+    const sets = getEntry(week, session, ex.name).sets;
+    if (index < sets.length) return { weight: sets[index].weight, reps: sets[index].reps };
+    const shown = shownName(week, session, ex);
+    const prev = previousEntry(week, session, ex, shown);
+    const lastToday = sets.filter((s) => doneAs(s, ex) === shown).pop();
+    const prevSame = prev?.sets[index] || null;
+    const prevBest = bestSet(prev?.sets);
+    const move = moveFor(shown);
+    const weight = lastToday?.weight ?? prevSame?.weight ?? prevBest?.weight ?? (move?.bw ? 0 : null);
+    const reps = lastToday?.reps ?? prevSame?.reps ?? repsLow(ex.reps);
+    return { weight, reps };
+}
+
+function renderExerciseSheet() {
+    const sh = ui.sheet;
+    const ex = currentExercise();
+    if (!sh || !ex) return;
+    const { week, session, index } = sh;
+    const list = exercisesFor(week, session);
+    const orig = parseName(ex.name);
+    const shown = shownName(week, session, ex);
+    const cur = parseName(shown);
+    const swapped = shown !== ex.name;
+    const move = moveFor(shown);
+    const sets = getEntry(week, session, ex.name).sets;
+    const prev = previousEntry(week, session, ex, shown);
+    const tech = techniqueInfo(ex.technique);
+
+    // Header - the tags tell a top set from its back-off set (same exercise name)
+    const tags = [];
+    if (orig.superset) tags.push(`<span class="tag tag-super">Superset ${esc(orig.superset)}</span>`);
+    if (orig.setTag === 'heavy') tags.push('<span class="tag tag-heavy">Top set</span>');
+    if (orig.setTag === 'backoff') tags.push('<span class="tag">Back-off set</span>');
+    $('#sx-head').innerHTML = `
+        <div class="sheet-titles">
+            <div class="sheet-eyebrow"><span class="eyebrow">${esc(sessionName(session))} · ${index + 1} of ${list.length}</span>${tags.join('')}</div>
+            <h2 class="sheet-title">${esc(cur.base)}</h2>
+            ${swapped ? `<p class="sheet-note">Swapped in for ${esc(orig.base)}</p>` : ''}
+        </div>
+        <button class="icon-btn" data-action="close-sheet" aria-label="Close">${icon('x')}</button>`;
+
+    // Demo (only rebuilt when the movement changes, so the animation doesn't restart)
+    const demoKey = move?.gif || `none:${cur.base}`;
+    if (sh.demoKey !== demoKey) {
+        sh.demoKey = demoKey;
+        const demo = $('#sx-demo');
+        if (move?.gif) {
+            demo.className = 'demo';
+            demo.innerHTML = `<img src="${esc(move.gif)}" alt="${esc(`${cur.base} demonstration`)}" decoding="async" data-fallback="${esc(move.muscle || '')}">
+                <button class="demo-zoom" data-action="open-media" data-gif="${esc(move.gif)}" data-title="${esc(cur.base)}" data-note="${esc(move.note || '')}" aria-label="Enlarge demo">${icon('expand')}</button>`;
+        } else {
+            demo.className = 'demo is-placeholder';
+            demo.innerHTML = `<span class="placeholder-inner">${icon('dumbbell')}${esc(move?.muscle || '')}<br>No demo available</span>`;
+        }
+    }
+
+    // Info chips
+    const chips = [`<span class="chip"><strong>${ex.sets}</strong>${ex.sets === 1 ? 'set' : 'sets'} × <strong>${esc(range(ex.reps))}</strong></span>`];
+    chips.push(`<span class="chip ${tech.cls}">${esc(tech.label)}</span>`);
+    const restS = restSeconds(ex.rest);
+    const partner = orig.superset === 'A1' ? list[index + 1] : null;
+    chips.push(`<span class="chip">${icon('timer')}${restS ? esc(restText(ex.rest)) : partner ? `Straight into ${esc(parseName(partner.name).superset || 'A2')}` : 'No rest'}</span>`);
+    const wu = warmupText(ex.warmup);
+    if (wu) chips.push(`<span class="chip">${icon('flame')}${esc(wu)}</span>`);
+    if (move?.bw) chips.push('<span class="chip">Bodyweight · log added kg, 0 = BW</span>');
+    const caption = move?.gif && move.note ? `<p class="demo-caption">${icon('info', 'icon-xs')}${esc(move.note)}</p>` : '';
+    $('#sx-info').innerHTML = `${caption}<div class="chip-row">${chips.join('')}</div>`;
+
+    // Set table
+    const rowsCount = Math.max(ex.sets, sets.length + (sh.active !== null && sh.active >= sets.length && sh.active >= ex.sets ? 1 : 0));
+    let rows = '';
+    for (let i = 0; i < rowsCount; i++) {
+        const set = sets[i];
+        const p = prev?.sets[i];
+        const active = sh.active === i;
+        const extra = i >= ex.sets;
+        const prevTxt = p ? fmtSetShort(p) : '—';
+        if (set) {
+            // A set done before switching exercise keeps its own label
+            const other = doneAs(set, ex) !== shown ? parseName(doneAs(set, ex)).base : '';
+            rows += `<button class="set-row set-cols is-done ${active ? 'is-active' : ''}" data-action="pick-set" data-set="${i}" aria-label="Set ${i + 1}: ${esc(fmtSet(set))}${other ? `, done as ${esc(other)}` : ''}. Tap to edit">
+                <span class="set-no">${i + 1}</span><span class="set-prev">${esc(prevTxt)}</span><span class="set-now">${esc(fmtSet(set))}${other ? `<small class="set-as">${esc(other)}</small>` : ''}</span>${icon('check')}</button>`;
+        } else if (i === sets.length) {
+            rows += `<button class="set-row set-cols ${active ? 'is-active' : ''} ${extra ? 'is-extra' : ''}" data-action="pick-set" data-set="${i}">
+                <span class="set-no">${i + 1}</span><span class="set-prev">${extra ? 'extra' : esc(prevTxt)}</span><span class="set-now">${active ? 'Now' : '—'}</span><span></span></button>`;
+        } else {
+            rows += `<div class="set-row set-cols is-locked"><span class="set-no">${i + 1}</span><span class="set-prev">${esc(prevTxt)}</span><span class="set-now">—</span><span></span></div>`;
+        }
+    }
+    const prevLabel = prev ? (prev.week === week - 1 ? 'Last week' : `Week ${prev.week}`) : 'Last time';
+    $('#sx-sets').innerHTML = `
+        <div class="set-table">
+            <div class="set-head set-cols"><span>Set</span><span>${esc(prevLabel)}</span><span>Today</span><span></span></div>
+            ${rows}
+        </div>`;
+
+    // Extras: warm-up ramp, cues, swap
+    let extra = '';
+    if (warmupCount(ex.warmup) > 0) {
+        extra += `<details class="cues cues-warmup" ${ui.warmupOpen ? 'open' : ''}><summary>${icon('flame')}Warm-up · ${esc(warmupText(ex.warmup).replace(/ warm-up/, ''))}${icon('chev-down')}</summary>
+            ${warmupRampBody(ex, workingWeight(), shown)}</details>`;
+    }
+    extra += `<details class="cues cues-notes" ${ui.cuesOpen ? 'open' : ''}><summary>${icon('info')}Coaching cues${icon('chev-down')}</summary><div class="cues-body">${esc(ex.notes)}</div></details>`;
+    if (ex.subs?.length) {
+        extra += `<div class="link-row"><button class="btn" data-action="open-swap">${icon('swap')}${swapped ? 'Change or revert swap' : 'Swap exercise'}</button></div>`;
+    }
+    $('#sx-extra').innerHTML = extra;
+
+    renderSheetFooter();
+}
+
+// The weight the warm-up ramp is based on: what's in the input now, else the pre-fill
+function workingWeight() {
+    const sh = ui.sheet;
+    const ex = currentExercise();
+    if (!sh || !ex) return null;
+    return sh.draft?.weight ?? prefillFor(sh.week, sh.session, ex, sh.active ?? 0).weight;
+}
+
+function warmupRampBody(ex, workW, shown) {
+    const n = warmupCount(ex.warmup);
+    const plan = n >= 3 ? [[0.5, 10], [0.7, 6], [0.85, 3]] : n === 2 ? [[0.5, 10], [0.75, 5]] : [[0.7, 6]];
+    const step = stepFor(shown);
+    const rows = plan.map(([pct, reps]) => {
+        const w = workW > 0 ? `${fmtNum(Math.max(step, Math.round((workW * pct) / step) * step))} kg` : `${Math.round(pct * 100)}%`;
+        return `<li><span>${Math.round(pct * 100)}% × ${reps}</span><span>${w}</span></li>`;
+    }).join('');
+    const note = workW > 0 ? `Based on ${fmtNum(workW)} kg working weight.` : 'Percent of your working weight.';
+    return `<div class="cues-body"><ul>${rows}</ul><p class="muted">${note}${ex.warmup === '2-3' ? ' The 85% set is optional.' : ''}</p></div>`;
+}
+
+// Keep the warm-up weights in step with the weight being entered (without touching the footer)
+function refreshWarmupRamp() {
+    const ex = currentExercise();
+    const body = $('#sx-extra .cues-warmup .cues-body');
+    if (!ex || !body) return;
+    body.outerHTML = warmupRampBody(ex, workingWeight(), shownName(ui.sheet.week, ui.sheet.session, ex));
+}
+
+function renderSheetFooter() {
+    const sh = ui.sheet;
+    const ex = currentExercise();
+    if (!sh || !ex) return;
+    const foot = $('#sx-foot');
+    // Re-rendering replaces the buttons: remember which control had focus (keyboard users)
+    const focusedAction = foot.contains(document.activeElement) ? document.activeElement.dataset?.action : null;
+    const { week, session, index } = sh;
+    const sets = getEntry(week, session, ex.name).sets;
+    const shown = shownName(week, session, ex);
+    const move = moveFor(shown);
+    const list = exercisesFor(week, session);
+    const next = nextUp(week, session, index);
+    let html = restStripHtml();
+
+    if (sh.active === null) {
+        html += `<div class="all-done"><span class="done-dot">${icon('check')}</span><span>${ex.sets === 1 ? 'Set done' : `All ${ex.sets} sets done`}</span></div>`;
+        if (next !== null) html += nextButtonHtml(list, next);
+        else html += `<button class="btn btn-primary btn-big btn-block" data-action="close-sheet">${icon('check')}${esc(sessionName(session))} complete</button>`;
+        html += `<div class="logger-alt"><button class="btn btn-ghost" data-action="add-set">${icon('plus')}Add a set</button></div>`;
+    } else {
+        const editing = sh.active < sets.length;
+        const extra = sh.active >= ex.sets;
+        // Only real superset partners get the nudge (never for an extra set of a normal exercise)
+        const partner = next !== null && next !== index && Math.abs(next - index) === 1
+            && parseName(ex.name).superset && parseName(list[next].name).superset;
+        if (!editing && !extra && partner) html += supersetNudgeHtml(list, index, next);
+        const pf = sh.draft || prefillFor(week, session, ex, sh.active);
+        const step = stepFor(shown);
+        const title = editing ? `Edit set ${sh.active + 1}` : extra ? `Extra set ${sh.active + 1}` : `Set ${sh.active + 1} of ${ex.sets}`;
+        html += `
+        <div class="logger-head">
+            <span><strong>${title}</strong> <span class="muted">· ${esc(repsText(ex.reps))}</span></span>
+            <button class="step-chip" data-action="cycle-step" aria-label="Weight step: ${step} kg. Tap to change">±${fmtNum(step)} kg</button>
+        </div>
+        <div class="steppers">
+            <div class="stepper" data-field="weight">
+                <button type="button" data-step="-1" aria-label="Less weight">${icon('minus')}</button>
+                <label class="stepper-field"><input id="in-weight" type="number" inputmode="decimal" step="any" min="0" enterkeyhint="next" value="${pf.weight ?? ''}" placeholder="–" aria-label="${move?.bw ? 'Added weight in kilograms, 0 for bodyweight' : 'Weight in kilograms'}"><span class="stepper-unit">${move?.bw ? '+kg' : 'kg'}</span></label>
+                <button type="button" data-step="1" aria-label="More weight">${icon('plus')}</button>
+            </div>
+            <div class="stepper" data-field="reps">
+                <button type="button" data-step="-1" aria-label="Fewer reps">${icon('minus')}</button>
+                <label class="stepper-field"><input id="in-reps" type="number" inputmode="numeric" step="1" min="1" enterkeyhint="done" value="${pf.reps ?? ''}" placeholder="–" aria-label="Reps"><span class="stepper-unit">reps</span></label>
+                <button type="button" data-step="1" aria-label="More reps">${icon('plus')}</button>
+            </div>
+        </div>`;
+        html += `<button class="btn btn-primary btn-big btn-block" data-action="log-set">${editing ? 'Save changes' : `${icon('check')}Log set ${sh.active + 1}`}</button>`;
+        const prevSame = previousEntry(week, session, ex, shown)?.sets[sh.active] || null;
+        if (!editing && prevSame && (prevSame.weight !== pf.weight || prevSame.reps !== pf.reps)) {
+            html += `<button class="fill-btn" data-action="log-same">${icon('history', 'icon-sm')}Log same as last time · <strong>${esc(fmtSet(prevSame))}</strong></button>`;
+        }
+        if (editing) {
+            html += `<div class="logger-alt"><button class="btn btn-danger" data-action="delete-set">${icon('trash')}Delete set</button><button class="btn btn-ghost" data-action="cancel-edit">Cancel</button></div>`;
+        } else if (extra) {
+            html += `<div class="logger-alt"><button class="btn btn-ghost" data-action="cancel-edit">Cancel extra set</button></div>`;
+        }
+    }
+    foot.innerHTML = html;
+    if (focusedAction) (foot.querySelector(`[data-action="${focusedAction}"]`) || foot.querySelector('.btn-primary'))?.focus({ preventScroll: true });
+}
+
+function supersetNudgeHtml(list, index, next) {
+    const sh = ui.sheet;
+    const cur = parseName(list[index].name);
+    const target = parseName(list[next].name);
+    const name = parseName(shownName(sh.week, sh.session, list[next])).base;
+    const curDone = getEntry(sh.week, sh.session, list[index].name).sets.length;
+    let title, sub;
+    if (cur.superset === 'A1') { title = `Now ${target.superset}: ${name}`; sub = 'Go straight into it, rest after'; }
+    else if (curDone > 0) { title = `Next round: ${target.superset} · ${name}`; sub = 'After your rest'; }
+    else { title = `Start with ${target.superset}: ${name}`; sub = `Then come back to ${cur.superset}`; }
+    return `<button class="superset-nudge" data-action="goto-exercise" data-index="${next}">${icon('swap')}
+        <span>${esc(title)}<small>${esc(sub)}</small></span>${icon('arrow-right')}</button>`;
+}
+
+function nextButtonHtml(list, next) {
+    const ex = list[next];
+    const p = parseName(ex.name);
+    const tag = p.setTag === 'heavy' ? ' · top set' : p.setTag === 'backoff' ? ' · back-off' : '';
+    const shown = parseName(shownName(ui.sheet.week, ui.sheet.session, ex)).base + tag;
+    return `<button class="btn btn-primary btn-big btn-block next-btn" data-action="goto-exercise" data-index="${next}">
+        <span class="next-text"><small>Next up${p.superset ? ` · ${esc(p.superset)}` : ''}</small><span>${esc(shown)}</span></span>${icon('arrow-right')}</button>`;
+}
+
+function readInputs() {
+    const w = $('#in-weight')?.value.trim().replace(',', '.');
+    const r = $('#in-reps')?.value.trim();
+    return { weight: w === '' || w === undefined ? NaN : parseFloat(w), reps: r === '' || r === undefined ? NaN : parseFloat(r) };
+}
+
+function saveDraft() {
+    if (!ui.sheet) return;
+    const { weight, reps } = readInputs();
+    ui.sheet.draft = { weight: Number.isFinite(weight) ? weight : null, reps: Number.isFinite(reps) ? reps : null };
+    refreshWarmupRamp();
+}
+
+// Shown instead of a success message when localStorage refused the write
+function warnNotSaved() {
+    showToast("Not saved on this phone. Export a backup now", { action: 'Export', onAction: exportBackup, duration: 12000, error: true });
+}
+
+function logSet(values = readInputs()) {
+    const sh = ui.sheet;
+    const ex = currentExercise();
+    if (!sh || !ex || sh.active === null) return;
+    let { weight, reps } = values;
+    // Focus first: focusing a logger input dismisses toasts, and this message must stay
+    if (!Number.isFinite(weight) || weight < 0) { $('#in-weight')?.focus(); showToast('Enter the weight (0 = bodyweight)'); return; }
+    if (!Number.isFinite(reps) || reps < 1) { $('#in-reps')?.focus(); showToast('Enter how many reps you did'); return; }
+    if (weight > 1000 || reps > 200) { showToast('That looks too high, check the numbers'); return; }
+    weight = round2(weight);
+    reps = Math.round(reps);
+
+    const { week, session, index } = sh;
+    const stored = getEntry(week, session, ex.name);
+    const entry = { ...stored, sets: [...stored.sets] };
+    const editing = sh.active < entry.sets.length;
+    const setIndex = editing ? sh.active : entry.sets.length;
+    const shown = shownName(week, session, ex);
+    const set = { weight, reps, t: editing ? (entry.sets[setIndex].t || Date.now()) : Date.now() };
+    // Label the set with the exercise it was done as; an edited set keeps its original label
+    const as = editing ? entry.sets[setIndex].as : (shown !== ex.name ? shown : undefined);
+    if (as) set.as = as;
+    entry.sets[setIndex] = set;
+    putEntry(week, session, ex.name, entry);
+    const saved = saveState();
+    unlockAudio();
+    haptic(12);
+
+    const n = entry.sets.length;
+    sh.active = n < ex.sets ? n : null;
+    sh.draft = null;
+    let timerStarted = false;
+    const sessionDone = nextUp(week, session, index) === null;
+    if (sessionDone && state.timer) stopRest(); // the workout is over - no "time for the next set"
+    if (!editing) {
+        const secs = restSeconds(ex.rest);
+        // No countdown after the last set of the whole session
+        if (secs > 0 && !sessionDone) {
+            startRest(secs, parseName(shown).base, { week, session, index });
+            timerStarted = true;
+        }
+    }
+    ui.listDirty = true;
+    renderExerciseSheet();
+    requestAnimationFrame(revealActiveRow);
+    if (!saved) {
+        warnNotSaved();
+    } else if (editing) {
+        showToast(`Set ${setIndex + 1} updated`);
+    } else {
+        showToast(`Set ${setIndex + 1} logged · ${fmtSet(set)}`, {
+            action: 'Undo',
+            onAction: () => {
+                const now = getEntry(week, session, ex.name);
+                if (now.sets[setIndex] !== set) return;
+                const undone = { ...now, sets: now.sets.filter((_, i) => i !== setIndex) };
+                putEntry(week, session, ex.name, undone);
+                if (timerStarted && state.timer) stopRest();
+                const ok = saveState();
+                if (ui.sheet && ui.sheet.index === index && ui.sheet.week === week && ui.sheet.session === session) {
+                    ui.sheet.active = setIndex;
+                    ui.sheet.draft = { weight: set.weight, reps: set.reps };
+                }
+                refreshAfterDataChange();
+                if (!ok) warnNotSaved();
+            }
+        });
+    }
+}
+
+function deleteSet() {
+    const sh = ui.sheet;
+    const ex = currentExercise();
+    if (!sh || !ex || sh.active === null) return;
+    const { week, session, index } = sh;
+    const stored = getEntry(week, session, ex.name);
+    const at = sh.active;
+    const removed = stored.sets[at];
+    if (!removed) return;
+    const entry = { ...stored, sets: stored.sets.filter((_, i) => i !== at) };
+    putEntry(week, session, ex.name, entry);
+    const saved = saveState();
+    sh.active = entry.sets.length < ex.sets ? entry.sets.length : null;
+    sh.draft = null;
+    ui.listDirty = true;
+    renderExerciseSheet();
+    if (!saved) { warnNotSaved(); return; }
+    showToast(`Set ${at + 1} deleted`, {
+        action: 'Undo',
+        onAction: () => {
+            const now = getEntry(week, session, ex.name);
+            if (now.sets.includes(removed)) return; // already restored
+            const sets = [...now.sets];
+            sets.splice(Math.min(at, sets.length), 0, removed);
+            putEntry(week, session, ex.name, { ...now, sets }); // the set carries its own `as` label
+            const ok = saveState();
+            if (ui.sheet && ui.sheet.index === index && ui.sheet.week === week && ui.sheet.session === session) {
+                ui.sheet.active = sets.length < ex.sets ? sets.length : null;
+                ui.sheet.draft = null;
+            }
+            refreshAfterDataChange();
+            if (!ok) warnNotSaved();
+        }
+    });
+}
+
+function refreshAfterDataChange() {
+    if (ui.sheet && $('#exercise-sheet').open) { renderExerciseSheet(); ui.listDirty = true; }
+    else render();
+    renderTopbar();
+}
+
+function stepField(field, dir) {
+    const input = field === 'weight' ? $('#in-weight') : $('#in-reps');
+    if (!input) return;
+    const cur = parseFloat(String(input.value).replace(',', '.'));
+    const base = Number.isFinite(cur) ? cur : 0;
+    let next;
+    if (field === 'weight') {
+        // Snap to the step grid: 3 kg +2.5 -> 5 kg, not 5.5 kg
+        const step = stepFor(shownName(ui.sheet.week, ui.sheet.session, currentExercise()));
+        const k = base / step;
+        const nk = dir > 0 ? Math.floor(k + 1e-9) + 1 : Math.ceil(k - 1e-9) - 1;
+        next = Math.max(0, round2(nk * step));
+    } else {
+        next = Math.max(1, Math.round(base) + dir);
+    }
+    input.value = fmtNum(next);
+    saveDraft();
+}
+
+// ===== Swap =====
+function openSwap() {
+    const sh = ui.sheet;
+    const ex = currentExercise();
+    if (!sh || !ex) return;
+    const shown = shownName(sh.week, sh.session, ex);
+    const [, end] = blockRange(blockOf(sh.week));
+    const weeks = sh.week === end ? `week ${end}` : `weeks ${sh.week}–${end}`;
+    const options = [ex.name, ...(ex.subs || [])];
+    const items = options.map((name) => {
+        const p = parseName(name);
+        const current = name === shown;
+        const move = moveFor(name);
+        return `<button class="option ${current ? 'is-current' : ''}" data-action="choose-swap" data-name="${esc(name)}">
+            ${thumbHtml(move, p.base)}
+            <span class="option-text"><span class="option-name">${esc(p.base)}</span>
+            <span class="option-meta">${name === ex.name ? 'Program exercise' : 'Alternative'}${move?.muscle ? ` · ${esc(move.muscle)}` : ''}</span></span>
+            ${current ? icon('check') : ''}</button>`;
+    }).join('');
+    setSheetHtml($('#swap-sheet'), `
+        <div class="sheet-grab" data-drag aria-hidden="true"></div>
+        <header class="sheet-head"><div class="sheet-titles"><h2 class="sheet-title">Swap exercise</h2>
+            <p class="sheet-note">Applies to ${sessionName(sh.session)}, ${weeks}. Sets you've logged stay with this slot.</p></div>
+            <button class="icon-btn" data-action="close-sheet" aria-label="Close">${icon('x')}</button></header>
+        <div class="sheet-body"><div class="option-list">${items}</div></div>`);
+    openSheet($('#swap-sheet'));
+}
+
+function chooseSwap(name) {
+    const sh = ui.sheet;
+    const ex = currentExercise();
+    if (!sh || !ex) return;
+    const [, end] = blockRange(blockOf(sh.week));
+    for (let w = sh.week; w <= end; w++) {
+        const key = dataKey(w, sh.session, ex.name);
+        if (name === ex.name) delete state.substitutionOverrides[key];
+        else state.substitutionOverrides[key] = name;
+    }
+    const saved = saveState();
+    sh.draft = null;
+    ui.listDirty = true;
+    // Focus can only move once the swap sheet has really closed (until then the exercise
+    // sheet behind it is inert)
+    if (ui.keyboardNav) {
+        $('#swap-sheet').addEventListener('close', () => $('#sx-extra [data-action="open-swap"]')?.focus({ preventScroll: true }), { once: true });
+    }
+    closeSheet($('#swap-sheet'));
+    renderExerciseSheet();
+    const base = parseName(name).base;
+    if (!saved) warnNotSaved();
+    else showToast(name === ex.name ? `Back to ${base}` : `Swapped to ${base}`);
+}
+
+// ===== Week picker =====
+function openWeeks() {
+    let html = '';
+    for (let b = 1; b <= Math.ceil(TOTAL_WEEKS / PROGRAM.blockLength); b++) {
+        const [start, end] = blockRange(b);
+        let tiles = '';
+        for (let w = start; w <= end; w++) {
+            const done = SESSIONS.filter((s) => sessionProgress(w, s).complete).length;
+            const started = SESSIONS.some((s) => sessionProgress(w, s).started);
+            tiles += `<button class="week-tile ${w === state.currentWeek ? 'is-current' : ''} ${done === SESSIONS.length ? 'is-complete' : ''}" data-action="pick-week" data-week="${w}">
+                <span class="week-tile-name">Week ${w}</span>
+                <span class="week-tile-meta">${done === SESSIONS.length ? 'Done' : started ? `${done}/5 done` : '—'}</span>
+                <span class="meter ${done === SESSIONS.length ? 'is-done' : ''}"><span style="--p:${(done / SESSIONS.length) * 100}%"></span></span></button>`;
+        }
+        html += `<div class="week-block"><div class="section-label">Block ${b} · weeks ${start}–${end}</div><div class="week-grid">${tiles}</div></div>`;
+    }
+    setSheetHtml($('#week-sheet'), `
+        <div class="sheet-grab" data-drag aria-hidden="true"></div>
+        <header class="sheet-head"><div class="sheet-titles"><h2 class="sheet-title">Choose week</h2>
+            <p class="sheet-note">Exercises change at the start of each block.</p></div>
+            <button class="icon-btn" data-action="close-sheet" aria-label="Close">${icon('x')}</button></header>
+        <div class="sheet-body">${html}</div>`);
+    openSheet($('#week-sheet'));
+}
+
+function setWeek(week) {
+    week = clamp(week, 1, TOTAL_WEEKS);
+    if (week === state.currentWeek) return;
+    state.currentWeek = week;
+    dismissToast();
+    saveState();
+    render();
+    window.scrollTo({ top: 0 });
+}
+
+function setSession(session) {
+    state.currentSession = session;
+    if (state.activeTab !== 'workout') state.activeTab = 'workout';
+    saveState();
+    render();
+    const p = sessionProgress(state.currentWeek, session);
+    const nextCard = p.started && !p.complete ? $('.ex-card.is-next') : null;
+    if (nextCard) nextCard.scrollIntoView({ block: 'start', behavior: reducedMotion() ? 'auto' : 'smooth' });
+    else window.scrollTo({ top: 0 });
+}
+
+function switchTab(tab) {
+    if (!['workout', 'progress', 'guide'].includes(tab)) return;
+    state.activeTab = tab;
+    saveState();
+    render();
+    window.scrollTo({ top: 0 });
+}
+
+// ===== Rest timer =====
+let restTick = null;
+
+function startRest(seconds, label, ref) {
+    state.timer = { endsAt: Date.now() + seconds * 1000, duration: seconds, label, ref };
+    saveState();
+    renderRest();
+}
+function stopRest() {
+    state.timer = null;
+    saveState();
+    renderRest();
+}
+function adjustRest(delta) {
+    const t = state.timer;
+    if (!t) return;
+    t.endsAt += delta * 1000;
+    t.duration = Math.max(1, t.duration + delta);
+    if (t.endsAt <= Date.now()) { stopRest(); return; }
+    saveState();
+    tickRest();
+}
+function restLeft() {
+    return state.timer ? Math.max(0, Math.ceil((state.timer.endsAt - Date.now()) / 1000)) : 0;
+}
+const fmtClock = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+function restStripHtml() {
+    const t = state.timer;
+    if (!t) return '';
+    return `<div class="rest-strip" role="timer" aria-live="off">
+        ${icon('timer', 'rest-icon')}
+        <div class="rest-info"><span class="rest-title">Rest</span><span class="rest-time js-rest-time">${fmtClock(restLeft())}</span></div>
+        <button class="btn btn-sm" data-action="rest-adjust" data-delta="-15" aria-label="15 seconds less">−15</button>
+        <button class="btn btn-sm" data-action="rest-adjust" data-delta="15" aria-label="15 seconds more">+15</button>
+        <button class="btn btn-sm" data-action="rest-skip">Skip</button>
+        <div class="rest-progress"><span class="js-rest-progress"></span></div>
+    </div>`;
+}
+
+function renderRest() {
+    const t = state.timer;
+    const sheetOpen = $('#exercise-sheet').open;
+    const bar = $('#rest-bar');
+    if (t && !sheetOpen) {
+        bar.innerHTML = `
+            <button class="rest-open" data-action="open-rest-exercise" aria-label="Open exercise">
+                ${icon('timer', 'rest-icon')}
+                <span class="rest-info"><span class="rest-label">Rest · ${esc(t.label)}</span><span class="rest-time js-rest-time">${fmtClock(restLeft())}</span></span>
+            </button>
+            <button class="btn btn-sm" data-action="rest-adjust" data-delta="-15" aria-label="15 seconds less">−15</button>
+            <button class="btn btn-sm" data-action="rest-adjust" data-delta="15" aria-label="15 seconds more">+15</button>
+            <button class="btn btn-sm" data-action="rest-skip">Skip</button>
+            <div class="rest-progress"><span class="js-rest-progress"></span></div>`;
+        bar.hidden = false;
+    } else {
+        bar.hidden = true;
+        bar.innerHTML = '';
+    }
+    document.body.classList.toggle('has-rest-bar', !!t && !sheetOpen);
+    if (sheetOpen && ui.sheet) {
+        // Add/remove only the strip: rebuilding the footer would drop focus mid-typing
+        const foot = $('#sx-foot');
+        const strip = $('.rest-strip', foot);
+        if (strip && !t) strip.remove();
+        else if (!strip && t) foot.insertAdjacentHTML('afterbegin', restStripHtml());
+    }
+    if (t && !restTick) restTick = setInterval(tickRest, 250);
+    if (!t && restTick) { clearInterval(restTick); restTick = null; }
+    if (t) tickRest();
+}
+
+function tickRest() {
+    const t = state.timer;
+    if (!t) return;
+    const left = restLeft();
+    if (left <= 0) { finishRest(); return; }
+    const pct = clamp(100 - ((t.endsAt - Date.now()) / (t.duration * 1000)) * 100, 0, 100);
+    $$('.js-rest-time').forEach((el) => { el.textContent = fmtClock(left); });
+    $$('.js-rest-progress').forEach((el) => { el.style.width = `${pct}%`; });
+}
+
+function finishRest() {
+    state.timer = null;
+    saveState();
+    renderRest();
+    if (state.prefs.vibrate) haptic([220, 120, 220]);
+    if (state.prefs.sound) beep();
+    showToast('Rest over · time for the next set');
+}
+
+let audioCtx = null;
+function unlockAudio() {
+    try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) { audioCtx = null; }
+}
+function beep() {
+    unlockAudio();
+    if (!audioCtx) return;
+    try {
+        const now = audioCtx.currentTime;
+        for (const at of [0, 0.22]) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.value = 880;
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            gain.gain.setValueAtTime(0.0001, now + at);
+            gain.gain.exponentialRampToValueAtTime(0.35, now + at + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + at + 0.18);
+            osc.start(now + at);
+            osc.stop(now + at + 0.2);
+        }
+    } catch (e) { /* audio unavailable - vibration and toast still fire */ }
+}
+function haptic(pattern) {
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) { /* unsupported */ }
+}
+
+// ===== Progress view =====
+function computeStats() {
+    const weeks = [];
+    const sessions = [];
+    let totalSets = 0, totalVolume = 0, sessionsDone = 0;
+    for (let w = 1; w <= TOTAL_WEEKS; w++) {
+        let sets = 0, volume = 0, done = 0;
+        for (const s of SESSIONS) {
+            const p = sessionProgress(w, s);
+            sets += p.logged;
+            volume += p.volume;
+            if (p.complete) done++;
+            if (p.logged) sessions.push({ week: w, session: s, ...p });
+        }
+        weeks.push({ week: w, sets, volume, done });
+        totalSets += sets;
+        totalVolume += volume;
+        sessionsDone += done;
+    }
+    return { weeks, sessions, totalSets, totalVolume, sessionsDone };
+}
+
+function niceCeil(v) {
+    if (v <= 0) return 1;
+    const p = Math.pow(10, Math.floor(Math.log10(v)));
+    const m = v / p;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
+}
+
+function volumeChartHtml(weeks, current) {
+    const W = 320, H = 170, L = 36, R = 4, T = 20, B = 24;
+    const maxVol = Math.max(...weeks.map((w) => w.volume));
+    if (maxVol <= 0) return '<p class="chart-empty">Log some sets to see your weekly volume.</p>';
+    const top = niceCeil(maxVol);
+    const plotH = H - T - B;
+    const band = (W - L - R) / weeks.length;
+    const bw = Math.min(18, band - 6);
+    let grid = '', bars = '', axis = '', labels = '';
+    for (const f of [0, 0.5, 1]) {
+        const y = T + plotH * (1 - f);
+        grid += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y}" y2="${y}"/>`;
+        axis += `<text class="axis-text" x="${L - 6}" y="${y + 4}" text-anchor="end">${fmtCompact(top * f)}</text>`;
+    }
+    const maxIdx = weeks.findIndex((w) => w.volume === maxVol);
+    weeks.forEach((w, i) => {
+        const cx = L + band * i + band / 2;
+        const isCur = w.week === current;
+        axis += `<text class="axis-text ${isCur ? 'is-current' : ''}" x="${cx}" y="${H - 6}" text-anchor="middle">${w.week}</text>`;
+        if (w.volume <= 0) return;
+        const h = Math.max(3, (plotH * w.volume) / top);
+        const x = cx - bw / 2;
+        const y = T + plotH - h;
+        const r = Math.min(4, h, bw / 2);
+        bars += `<rect class="hit" x="${L + band * i}" y="${T - 14}" width="${band}" height="${plotH + 14}" tabindex="0" role="img"
+            aria-label="Week ${w.week}: ${fmtInt(w.volume)} kg, ${w.sets} sets" data-i="${i}"/>`;
+        bars += `<path class="bar" d="M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + bw - r}Q${x + bw},${y} ${x + bw},${y + r}V${y + h}Z"/>`;
+        if (isCur || i === maxIdx) labels += `<text class="value-text" x="${cx}" y="${y - 5}" text-anchor="middle">${fmtCompact(w.volume)}</text>`;
+    });
+    return `<div class="chart" id="volume-chart"><svg viewBox="0 0 ${W} ${H}" aria-label="Volume lifted per week">${grid}${axis}${bars}${labels}</svg></div>`;
+}
+
+function sparkHtml(points) {
+    if (points.length < 2) return '';
+    const W = 64, H = 26, P = 5;
+    const vals = points.map((p) => p.v);
+    const lo = Math.min(...vals), hi = Math.max(...vals);
+    const span = hi - lo || 1;
+    const xs = (i) => P + (i * (W - 2 * P)) / (points.length - 1);
+    const ys = (v) => (hi === lo ? H / 2 : H - P - ((v - lo) / span) * (H - 2 * P));
+    const pts = points.map((p, i) => `${xs(i).toFixed(1)},${ys(p.v).toFixed(1)}`).join(' ');
+    const last = points.length - 1;
+    return `<svg class="spark" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${pts}"/><circle cx="${xs(last).toFixed(1)}" cy="${ys(points[last].v).toFixed(1)}" r="4"/></svg>`;
+}
+
+function deltaHtml(cur, prev) {
+    if (!cur || !prev) return '';
+    if (cur.weight !== prev.weight) {
+        const d = round2(cur.weight - prev.weight);
+        return d > 0 ? `<span class="delta is-up">▲ ${fmtNum(d)} kg</span>` : `<span class="delta is-down">▼ ${fmtNum(-d)} kg</span>`;
+    }
+    const d = cur.reps - prev.reps;
+    if (d > 0) return `<span class="delta is-up">▲ ${plural(d, 'rep')}</span>`;
+    if (d < 0) return `<span class="delta is-down">▼ ${plural(-d, 'rep')}</span>`;
+    return '<span class="delta is-same">= same</span>';
+}
+
+function renderProgress() {
+    const stats = computeStats();
+    const week = state.currentWeek;
+    const totalSessions = TOTAL_WEEKS * SESSIONS.length;
+    const block = ui.progressBlock || blockOf(week);
+
+    let html = '<h1 class="view-title">Progress</h1>';
+
+    // Program progress
+    let blocks = '';
+    for (let b = 1; b <= 3; b++) {
+        const [s, e] = blockRange(b);
+        const done = stats.weeks.slice(s - 1, e).reduce((n, w) => n + w.done, 0);
+        blocks += `<div class="program-block ${b === blockOf(week) ? 'is-current' : ''}"><div class="meter ${done === 20 ? 'is-done' : ''}"><span style="--p:${(done / 20) * 100}%"></span></div>Block ${b} · ${done}/20</div>`;
+    }
+    html += `<section class="card">
+        <div class="program-row"><div><p class="eyebrow">Program</p><strong>Week ${week} of ${TOTAL_WEEKS}</strong></div>
+        <span class="muted">${stats.sessionsDone} of ${totalSessions} sessions</span></div>
+        <div class="meter" role="progressbar" aria-label="Sessions completed" aria-valuemin="0" aria-valuemax="${totalSessions}" aria-valuenow="${stats.sessionsDone}"><span style="--p:${(stats.sessionsDone / totalSessions) * 100}%"></span></div>
+        <div class="program-blocks">${blocks}</div></section>`;
+
+    // KPIs
+    html += `<div class="kpis">
+        <div class="kpi"><div class="kpi-label">Workouts</div><div class="kpi-value">${stats.sessionsDone}</div></div>
+        <div class="kpi"><div class="kpi-label">Sets logged</div><div class="kpi-value">${fmtInt(stats.totalSets)}</div></div>
+        <div class="kpi"><div class="kpi-label">Volume</div><div class="kpi-value">${fmtCompact(stats.totalVolume)}<small>kg</small></div></div>
+    </div>`;
+
+    // This week
+    const rows = SESSIONS.map((s) => {
+        const p = sessionProgress(week, s);
+        const cls = p.complete ? 'is-done' : p.started ? 'is-started' : '';
+        const meta = p.complete ? `${p.logged} sets · ${fmtCompact(p.volume)} kg` : p.started ? `${p.done}/${p.target} sets` : `${p.target} sets planned`;
+        return `<button class="ws-row ${cls}" data-action="session" data-session="${s}">
+            <span class="ws-status">${p.complete ? icon('check') : ''}</span>
+            <span class="ws-name">${esc(sessionName(s))}</span><span class="ws-meta">${meta}</span>${icon('chev-right', 'icon-sm')}</button>`;
+    }).join('');
+    html += `<section class="card"><div class="card-head"><h2 class="card-title">Week ${week}</h2>
+        <span class="muted">${stats.weeks[week - 1].done}/5 done</span></div><div class="week-sessions">${rows}</div></section>`;
+
+    // Weekly volume chart (+ table twin)
+    const table = `<table class="data-table"><thead><tr><th>Week</th><th class="num">Sets</th><th class="num">Volume (kg)</th></tr></thead><tbody>
+        ${stats.weeks.filter((w) => w.sets > 0).map((w) => `<tr><td>Week ${w.week}</td><td class="num">${w.sets}</td><td class="num">${fmtInt(w.volume)}</td></tr>`).join('')}</tbody></table>`;
+    html += `<section class="card"><div class="card-head"><h2 class="card-title">Weekly volume</h2><span class="muted">kg lifted (weight × reps)</span></div>
+        ${volumeChartHtml(stats.weeks, week)}
+        ${stats.totalSets ? `<button class="btn btn-sm btn-ghost table-toggle" data-action="toggle-volume-table">${ui.showVolumeTable ? 'Hide table' : 'Show as table'}</button>${ui.showVolumeTable ? table : ''}` : ''}
+    </section>`;
+
+    // Exercise progress for a block
+    const seg = [1, 2, 3].map((b) => `<button class="${b === block ? 'is-active' : ''}" data-action="progress-block" data-block="${b}" aria-pressed="${b === block}">Block ${b}</button>`).join('');
+    const [bs, be] = blockRange(block);
+    let groups = '';
+    for (const s of SESSIONS) {
+        let items = '';
+        for (const ex of PROGRAM.blocks[block][s]) {
+            const weeksData = [];
+            for (let w = bs; w <= be; w++) {
+                const e = state.workoutData[dataKey(w, s, ex.name)];
+                if (e && e.sets.length) weeksData.push({ week: w, sets: e.sets });
+            }
+            if (!weeksData.length) continue;
+            const key = `${block}|${s}|${ex.name}`;
+            const open = ui.openHistory.has(key);
+            // Best, trend and delta only compare sets done as the exercise done most recently
+            const lastWeek = weeksData[weeksData.length - 1];
+            const latestAs = doneAs(lastWeek.sets[lastWeek.sets.length - 1], ex);
+            const same = weeksData
+                .map((d) => ({ week: d.week, sets: d.sets.filter((x) => doneAs(x, ex) === latestAs) }))
+                .filter((d) => d.sets.length)
+                .map((d) => ({ ...d, best: bestSet(d.sets) }));
+            const latest = same[same.length - 1];
+            const before = same[same.length - 2];
+            const best = bestSet(same.flatMap((d) => d.sets));
+            const shownBase = parseName(latestAs).base;
+            const setsText = (sets) => sets.map((x) => esc(fmtSetShort(x)) + (doneAs(x, ex) !== latestAs ? ` <span class="muted">(${esc(parseName(doneAs(x, ex)).base)})</span>` : '')).join(', ');
+            const detail = open ? `<div class="hist-detail"><table class="data-table"><thead><tr><th>Week</th><th>Sets</th></tr></thead><tbody>
+                ${weeksData.map((d) => `<tr><td>Week ${d.week}</td><td>${setsText(d.sets)}</td></tr>`).join('')}
+                </tbody></table></div>` : '';
+            items += `<div class="hist-item"><button class="hist-row" data-action="toggle-history" data-key="${esc(key)}" aria-expanded="${open}">
+                <span><span class="hist-name">${esc(shownBase)}${parseName(ex.name).setTag === 'heavy' ? ' · top set' : parseName(ex.name).setTag === 'backoff' ? ' · back-off' : ''}</span>
+                <span class="hist-meta">Best ${esc(fmtSet(best))} · W${latest.week}: ${latest.sets.map((x) => esc(fmtSetShort(x))).join(', ')}</span></span>
+                <span class="hist-right">${sparkHtml(same.map((d) => ({ v: d.best.weight || d.best.reps })))}${deltaHtml(latest.best, before?.best)}</span>
+            </button>${detail}</div>`;
+        }
+        if (items) groups += `<div class="hist-group"><div class="hist-group-title">${esc(sessionName(s))}</div>${items}</div>`;
+    }
+    html += `<section class="card"><div class="card-head"><h2 class="card-title">Exercise progress</h2></div>
+        <div class="seg" role="group" aria-label="Block">${seg}</div>
+        ${groups || `<p class="empty-note">Nothing logged in block ${block} (weeks ${bs}–${be}) yet.</p>`}
+        ${groups ? '<p class="empty-note">Arrows compare your best set with the previous week. Tap an exercise for every set.</p>' : ''}</section>`;
+
+    // Recent sessions
+    const recent = stats.sessions
+        .slice()
+        .sort((a, b) => (b.lastT - a.lastT) || (b.week - a.week) || (b.session - a.session))
+        .slice(0, 6);
+    if (recent.length) {
+        html += `<section class="card"><h2 class="card-title">Recent sessions</h2>${recent.map((r) => `
+            <div class="recent-row"><span class="recent-when">${r.lastT ? esc(shortDate(r.lastT)) : '—'}</span>
+            <span class="recent-what">${esc(sessionName(r.session))}<small>Week ${r.week}${r.complete ? ' · complete' : ` · ${r.done}/${r.target} sets`}</small></span>
+            <span class="recent-vol">${r.logged} sets · ${fmtCompact(r.volume)} kg</span></div>`).join('')}</section>`;
+    }
+
+    $('#view-progress').innerHTML = html;
+    bindChart(stats.weeks);
+}
+
+function bindChart(weeks) {
+    const chart = $('#volume-chart');
+    if (!chart) return;
+    const tip = document.createElement('div');
+    tip.className = 'chart-tip';
+    tip.hidden = true;
+    chart.append(tip);
+    const show = (hit) => {
+        const w = weeks[+hit.dataset.i];
+        const svg = chart.querySelector('svg');
+        const box = svg.getBoundingClientRect();
+        const scale = box.width / svg.viewBox.baseVal.width;
+        const x = (parseFloat(hit.getAttribute('x')) + parseFloat(hit.getAttribute('width')) / 2) * scale;
+        const barTop = hit.nextElementSibling.getBBox().y * scale;
+        tip.innerHTML = `<strong>${fmtInt(w.volume)} kg</strong>Week ${w.week} · ${plural(w.sets, 'set')}`;
+        tip.hidden = false;
+        const half = tip.offsetWidth / 2;
+        tip.style.left = `${clamp(x, half, box.width - half)}px`;
+        tip.style.top = `${Math.max(barTop - 6, tip.offsetHeight)}px`;
+        chart.querySelectorAll('.bar.is-hover').forEach((b) => b.classList.remove('is-hover'));
+        hit.nextElementSibling.classList.add('is-hover');
+    };
+    const hide = () => { tip.hidden = true; chart.querySelectorAll('.bar.is-hover').forEach((b) => b.classList.remove('is-hover')); };
+    chart.querySelectorAll('.hit').forEach((hit) => {
+        hit.addEventListener('pointerenter', () => show(hit));
+        hit.addEventListener('pointerdown', () => show(hit));
+        hit.addEventListener('focus', () => show(hit));
+        hit.addEventListener('blur', hide);
+    });
+    chart.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') hide(); });
+}
+
+// ===== Guide: warm-up checklist =====
+function renderWarmup() {
+    const today = localDate(Date.now());
+    const done = new Set(state.warmup.date === today ? state.warmup.done : []);
+    let html = WARMUP.map((sec) => `<div class="wu-section"><div class="section-label">${esc(sec.title)}</div><div class="wu-list">
+        ${sec.items.map((it) => {
+            const move = EXERCISE_MEDIA.moves[it.move];
+            const checked = done.has(it.id);
+            return `<div class="wu-item ${checked ? 'is-checked' : ''}">
+                ${move?.gif ? `<button class="thumb-btn" data-action="open-media" data-gif="${esc(move.gif)}" data-title="${esc(it.name)}" data-note="${esc(move.note || '')}" aria-label="Show ${esc(it.name)} demo">${thumbHtml(move, it.name)}</button>` : thumbHtml(move, it.name)}
+                <button class="wu-toggle" data-action="toggle-warmup" data-id="${esc(it.id)}" aria-pressed="${checked}">
+                    <span class="wu-text"><span class="wu-name">${esc(it.name)}</span><span class="wu-detail">${esc(it.detail)}</span></span>
+                    <span class="check">${icon('check')}</span>
+                </button></div>`;
+        }).join('')}</div></div>`).join('');
+    if (done.size) html += `<button class="btn btn-sm btn-ghost wu-reset" data-action="reset-warmup">Clear ticks</button>`;
+    $('#warmup-list').innerHTML = html;
+}
+
+function toggleWarmup(id) {
+    const today = localDate(Date.now());
+    const done = new Set(state.warmup.date === today ? state.warmup.done : []);
+    if (done.has(id)) done.delete(id); else done.add(id);
+    state.warmup = { date: today, done: [...done] };
+    saveState();
+    renderWarmup();
+}
+
+// ===== Media viewer =====
+function openMedia(gif, title, note) {
+    setSheetHtml($('#media-sheet'), `
+        <div class="sheet-grab" data-drag aria-hidden="true"></div>
+        <header class="sheet-head"><div class="sheet-titles"><h2 class="sheet-title">${esc(title)}</h2></div>
+            <button class="icon-btn" data-action="close-sheet" aria-label="Close">${icon('x')}</button></header>
+        <div class="media-full"><img src="${esc(gif)}" alt="${esc(`${title} demonstration`)}" data-fallback="${esc(title)}"></div>
+        ${note ? `<p class="demo-caption media-note">${icon('info', 'icon-xs')}${esc(note)}</p>` : ''}
+        <p class="media-credit">Animation: fitnessprogramer.com</p>`);
+    openSheet($('#media-sheet'));
+}
+
+// ===== Settings =====
+function renderSettings() {
+    const stale = backupStale();
+    const last = state.lastBackupAt ? `Last backup ${relDay(state.lastBackupAt)}` : 'No backup yet';
+    setSheetHtml($('#settings-sheet'), `
+        <div class="sheet-grab" data-drag aria-hidden="true"></div>
+        <header class="sheet-head"><div class="sheet-titles"><h2 class="sheet-title">Settings</h2></div>
+            <button class="icon-btn" data-action="close-sheet" aria-label="Close">${icon('x')}</button></header>
+        <div class="sheet-body">
+            <div class="settings-group">
+                <div class="section-label">Your data</div>
+                <div class="settings-card">
+                    <button class="settings-row ${stale ? 'is-warn' : ''}" data-action="export">${icon('download')}
+                        <span class="settings-row-text"><span class="settings-row-title">Export backup</span>
+                        <span class="settings-row-sub">${esc(last)}${stale ? ' · export one now' : ''}</span></span></button>
+                    <button class="settings-row" data-action="import">${icon('upload')}
+                        <span class="settings-row-text"><span class="settings-row-title">Restore from backup</span>
+                        <span class="settings-row-sub">Load a backup file (your current data is downloaded first)</span></span></button>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="section-label">Workout</div>
+                <div class="settings-card">
+                    ${switchRow('sound', 'Rest timer sound', 'Beep when the rest is over')}
+                    ${switchRow('vibrate', 'Vibration', 'Buzz when the rest is over')}
+                    ${switchRow('keepAwake', 'Keep screen on', 'While the app is open')}
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="section-label">Offline</div>
+                <div class="settings-card">
+                    <button class="settings-row" data-action="download-media" ${ui.mediaBusy ? 'aria-busy="true"' : ''}>${icon('cloud-off')}
+                        <span class="settings-row-text"><span class="settings-row-title">Save all exercise demos</span>
+                        <span class="settings-row-sub" id="media-status">${esc(ui.mediaStatus || 'So every animation shows without internet. Best on Wi-Fi.')}</span></span></button>
+                </div>
+            </div>
+            ${parkedKeys().length ? `<div class="settings-group">
+                <div class="section-label">Recovered data</div>
+                <div class="settings-card">
+                    <button class="settings-row is-warn" data-action="download-parked">${icon('download')}
+                        <span class="settings-row-text"><span class="settings-row-title">Download unreadable data</span>
+                        <span class="settings-row-sub">Saved data that couldn't be read was kept aside</span></span></button>
+                </div>
+            </div>` : ''}
+            <div class="settings-group">
+                <div class="settings-card">
+                    <button class="settings-row is-danger" data-action="reset-all">${icon('trash')}
+                        <span class="settings-row-text"><span class="settings-row-title">Reset all data</span>
+                        <span class="settings-row-sub">Downloads a backup first</span></span></button>
+                </div>
+            </div>
+            <p class="settings-foot">Gym Tracker ${APP_VERSION} · <span id="storage-status">Data is stored on this phone only</span><br>Exercise animations by fitnessprogramer.com</p>
+        </div>`);
+    renderStorageStatus();
+}
+
+function switchRow(pref, title, sub) {
+    return `<label class="settings-row"><span class="settings-row-text"><span class="settings-row-title">${esc(title)}</span>
+        <span class="settings-row-sub">${esc(sub)}</span></span>
+        <span class="switch"><input type="checkbox" data-pref="${pref}" ${state.prefs[pref] ? 'checked' : ''}><span></span></span></label>`;
 }
 
 async function renderStorageStatus() {
-    const el = document.getElementById('storage-status');
+    const el = $('#storage-status');
     if (!el || !navigator.storage?.persisted) return;
     try {
         const persisted = await navigator.storage.persisted();
-        const est = await navigator.storage.estimate();
-        const usedMb = ((est.usage || 0) / 1048576).toFixed(1);
-        el.textContent = `Storage: ${persisted ? 'protected against cleanup' : 'not yet protected'} · ${usedMb} MB used`;
+        el.textContent = persisted ? 'Storage protected from cleanup' : 'Storage not yet protected (install the app)';
+    } catch (e) { /* keep default text */ }
+}
+
+function requestPersistentStorage() {
+    try { navigator.storage?.persist?.().catch(() => {}); } catch (e) { /* unsupported */ }
+}
+
+// ===== Backup =====
+function downloadText(text, prefix) {
+    const blob = new Blob([text], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${prefix}-${localDate(Date.now())}.json`;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+// Backup file = the state, always stamped with this version (a restore must never mistake it
+// for v2 data). `extra` carries copies the app kept aside, so a reset loses nothing.
+function downloadJson(prefix, extra) {
+    downloadText(JSON.stringify({ ...state, appVersion: APP_VERSION, ...(extra || {}) }, null, 2), prefix);
+}
+
+// Copies of saved data the app set aside: the pre-v3 original and any unreadable data
+function keptCopies() {
+    const out = {};
+    try {
+        const pre = localStorage.getItem(PRE_V3_BACKUP_KEY);
+        if (pre) out.preUpdateCopy = pre;
+        const parked = parkedKeys().map((k) => localStorage.getItem(k)).filter(Boolean);
+        if (parked.length) out.unreadableCopies = parked;
+    } catch (e) { /* storage unavailable */ }
+    return out;
+}
+function parkedKeys() {
+    try {
+        return Object.keys(localStorage).filter((k) => k.startsWith(`${STORAGE_KEY}_unreadable_`));
     } catch (e) {
-        el.textContent = '';
+        return [];
+    }
+}
+function downloadParked() {
+    const texts = parkedKeys().map((k) => localStorage.getItem(k)).filter(Boolean);
+    if (!texts.length) { showToast('Nothing to download'); return; }
+    downloadText(texts.length === 1 ? texts[0] : JSON.stringify(texts, null, 2), 'gym-tracker-unreadable-data');
+    showToast('Saved to Downloads');
+}
+
+function exportBackup() {
+    downloadJson('gym-tracker-backup');
+    state.lastBackupAt = Date.now();
+    saveState();
+    renderTopbar();
+    const row = $('#settings-sheet [data-action="export"]');
+    if (row) {
+        row.classList.remove('is-warn');
+        $('.settings-row-sub', row).textContent = 'Last backup today';
+    }
+    showToast('Backup saved to Downloads');
+}
+
+function looksLikeBackup(p) {
+    return !!p && typeof p === 'object' && p.workoutData && typeof p.workoutData === 'object'
+        && Object.keys(p.workoutData).every((k) => DATA_KEY_RE.test(k));
+}
+
+async function importBackup(file) {
+    let parsed;
+    try { parsed = JSON.parse(await file.text()); } catch (e) { showToast("That file isn't a valid backup"); return; }
+    if (!looksLikeBackup(parsed)) { showToast("That file isn't a Gym Tracker backup"); return; }
+    const incoming = normalizeState(parsed);
+    const n = countSets(incoming);
+    const when = Number.isFinite(parsed.lastSavedAt) && parsed.lastSavedAt > 0 ? ` from ${new Date(parsed.lastSavedAt).toLocaleDateString()}` : '';
+    const ok = await confirmDialog({
+        title: 'Restore this backup?',
+        message: `It has ${plural(n, 'logged set')}${when}. It replaces what's on this phone now${countSets() ? ' (a copy of your current data is downloaded first)' : ''}.`,
+        confirm: 'Restore'
+    });
+    if (!ok) return;
+    if (countSets()) downloadJson('gym-tracker-before-restore');
+    incoming.lastBackupAt = Date.now();
+    state = incoming;
+    const saved = saveState();
+    closeAllSheets();
+    render();
+    window.scrollTo({ top: 0 });
+    if (!saved) warnNotSaved();
+    else showToast(`Backup restored · ${plural(n, 'set')}`);
+}
+
+async function resetAll() {
+    const extra = keptCopies();
+    const hasCopies = Object.keys(extra).length > 0;
+    const ok = await confirmDialog({
+        title: 'Reset all data?',
+        message: `This deletes every logged set and swap on this phone${hasCopies ? ', including the copies the app kept aside' : ''}.${countSets() || hasCopies ? ' Everything is downloaded as a backup file first, just in case.' : ''}`,
+        confirm: 'Reset all',
+        danger: true
+    });
+    if (!ok) return;
+    // One safety file with the current data plus any kept copies - nothing is lost by a reset
+    if (countSets() || hasCopies) downloadJson('gym-tracker-before-reset', extra);
+    try {
+        localStorage.removeItem(PRE_V3_BACKUP_KEY);
+        for (const k of parkedKeys()) localStorage.removeItem(k);
+    } catch (e) { /* storage unavailable */ }
+    const prefs = state.prefs;
+    state = defaultState();
+    state.prefs = prefs;
+    const saved = saveState();
+    closeAllSheets();
+    render();
+    window.scrollTo({ top: 0 });
+    if (!saved) warnNotSaved();
+    else showToast('All data reset');
+}
+
+// ===== Offline media =====
+function allGifUrls() {
+    return [...new Set(Object.values(EXERCISE_MEDIA.moves).map((m) => m.gif).filter(Boolean))];
+}
+
+// Loads a URL as an image (through the service worker): true only if it really decodes.
+// The GIF host sends no CORS headers, so a fetch can't see the HTTP status - decoding can.
+function imageDecodes(url) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        const timer = setTimeout(() => resolve(false), 30000);
+        img.onload = () => { clearTimeout(timer); resolve(img.naturalWidth > 0); };
+        img.onerror = () => { clearTimeout(timer); resolve(false); };
+        img.src = url;
+    });
+}
+
+function setMediaStatus(text) {
+    ui.mediaStatus = text;
+    const el = $('#media-status');
+    if (el) el.textContent = text;
+}
+
+async function downloadMedia() {
+    if (ui.mediaBusy) { showToast('Already saving the demos…'); return; }
+    if (!('caches' in window)) { showToast("Offline storage isn't available in this browser"); return; }
+    ui.mediaBusy = true;
+    $('#settings-sheet [data-action="download-media"]')?.setAttribute('aria-busy', 'true');
+    const urls = allGifUrls();
+    let done = 0, failed = 0;
+    try {
+        const cache = await caches.open(GIF_CACHE);
+        for (const url of urls) {
+            let ok = false;
+            for (let attempt = 0; attempt < 2 && !ok; attempt++) {
+                try {
+                    if (!(await cache.match(url))) await cache.put(url, await fetch(url, { mode: 'no-cors' }));
+                    ok = await imageDecodes(url);
+                } catch (e) { ok = false; }
+                if (!ok) await cache.delete(url).catch(() => {}); // never keep an error page
+            }
+            if (!ok) failed++;
+            done++;
+            setMediaStatus(`Saving… ${done}/${urls.length}`);
+        }
+    } finally {
+        ui.mediaBusy = false;
+        $('#settings-sheet [data-action="download-media"]')?.removeAttribute('aria-busy');
+    }
+    const msg = failed ? `${urls.length - failed} saved, ${failed} failed · try again on Wi-Fi` : `All ${urls.length} demos saved for offline use`;
+    setMediaStatus(msg);
+    showToast(msg);
+}
+
+// ===== Wake lock =====
+let wakeLock = null;
+async function updateWakeLock() {
+    if (!('wakeLock' in navigator)) return;
+    const want = state.prefs.keepAwake && document.visibilityState === 'visible';
+    try {
+        if (want && !wakeLock) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            wakeLock.addEventListener('release', () => { wakeLock = null; });
+        } else if (!want && wakeLock) {
+            await wakeLock.release();
+            wakeLock = null;
+        }
+    } catch (e) { wakeLock = null; /* denied (e.g. battery saver) - not critical */ }
+}
+
+// ===== Sheets: native <dialog> + Android back button =====
+const sheetStack = [];
+let popGuard = 0;
+const OPEN_GRACE_MS = 350; // ignore taps landing on a sheet while it slides in (double-tap protection)
+
+// Replace a sheet's content without destroying the toast host that may live inside it
+function setSheetHtml(dialog, html) {
+    if (dialog.contains(TOAST_HOST)) document.body.append(TOAST_HOST);
+    dialog.innerHTML = html;
+    if (dialog.open) placeToastHost();
+}
+
+function openSheet(dialog) {
+    if (dialog.open) return;
+    clearTimeout(dialog._closeTimer);
+    dialog._closing = false;
+    dialog._openedAt = performance.now();
+    dialog.classList.remove('is-closing');
+    dialog.style.transition = '';
+    dialog.style.transform = '';
+    dialog.showModal();
+    if (!sheetStack.length && !history.state?.gtModal) history.pushState({ gtModal: 1 }, '');
+    sheetStack.push(dialog);
+    placeToastHost();
+    if (dialog.id === 'exercise-sheet') renderRest();
+}
+
+function closeSheet(dialog) {
+    if (!dialog || !dialog.open || dialog._closing) return;
+    dialog._closing = true;
+    armShield(); // whatever is revealed underneath must not catch a second tap
+    // Move a visible toast out of the sheet first - but nothing may stop the sheet from closing
+    try { placeToastHost(); } catch (e) { console.error(e); }
+    const finish = () => {
+        dialog._closeTimer = null;
+        dialog.classList.remove('is-closing');
+        dialog.style.transition = '';
+        dialog.style.transform = '';
+        if (dialog.open) dialog.close();
+    };
+    clearTimeout(dialog._closeTimer);
+    if (reducedMotion()) { finish(); return; }
+    if (dialog.style.transform) {
+        // Mid-drag: continue the slide from where the finger left it
+        dialog.style.transition = 'transform 0.18s ease-in';
+        dialog.style.transform = 'translateY(100%)';
+        dialog._closeTimer = setTimeout(finish, 180);
+    } else {
+        dialog.classList.add('is-closing');
+        dialog._closeTimer = setTimeout(finish, 190);
     }
 }
 
-// ===== Offline media download =====
-async function downloadAllMedia() {
-    const progressEl = document.getElementById('media-progress');
-    if (!('caches' in window)) {
-        showToast('Offline cache not supported in this browser');
+function closeAllSheets() {
+    for (const d of [...sheetStack].reverse()) closeSheet(d);
+}
+
+function onDialogClosed(dialog) {
+    clearTimeout(dialog._closeTimer);
+    dialog._closeTimer = null;
+    dialog._closing = false;
+    dialog.classList.remove('is-closing');
+    dialog.style.transition = '';
+    dialog.style.transform = '';
+    const i = sheetStack.lastIndexOf(dialog);
+    if (i === -1) return;
+    sheetStack.splice(i, 1);
+    try { placeToastHost(); } catch (e) { console.error(e); }
+    if (dialog.id === 'exercise-sheet') afterExerciseSheetClosed();
+    if (!sheetStack.length && history.state?.gtModal && !dialog._viaPop) {
+        popGuard++;
+        history.back();
+    }
+    dialog._viaPop = false;
+}
+
+function afterExerciseSheetClosed() {
+    const sh = ui.sheet;
+    ui.sheet = null;
+    if (ui.listDirty) render(); else renderRest();
+    if (!sh || state.activeTab !== 'workout' || sh.week !== state.currentWeek || sh.session !== state.currentSession) return;
+    // The re-render replaced the card the dialog would return focus to (keyboard users only,
+    // so touch users don't get a stray focus ring)
+    if (ui.keyboardNav) $(`.ex-card[data-index="${sh.index}"]`)?.focus({ preventScroll: true });
+    // Just finished the session: bring the "complete / next session" card into view, without an
+    // Undo toast sitting on top of its button
+    const doneCard = $('.done-card');
+    if (doneCard && !sh.startedComplete) {
+        dismissToast();
+        doneCard.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
+    }
+}
+
+window.addEventListener('popstate', () => {
+    if (popGuard > 0) {
+        popGuard--;
+        if (sheetStack.length && !history.state?.gtModal) history.pushState({ gtModal: 1 }, '');
         return;
     }
-    const urls = [...new Set(Object.values(exerciseGifs))];
-    urls.push('https://fitnessprogramer.com/wp-content/uploads/2022/02/Foam-Rolling-Quadriceps.gif');
-    const cache = await caches.open(GIF_CACHE);
-    let done = 0, failed = 0;
-    for (const url of urls) {
+    const alert = $('#confirm-dialog');
+    if (alert.open) {
+        alert._resolve?.(false);
+        if (sheetStack.length) history.pushState({ gtModal: 1 }, '');
+        return;
+    }
+    // A sheet that is already sliding away doesn't count: back closes the next one down
+    const open = sheetStack.filter((d) => !d._closing);
+    const top = open[open.length - 1];
+    if (top) {
+        top._viaPop = true;
+        closeSheet(top);
+        if (open.length > 1) history.pushState({ gtModal: 1 }, '');
+    }
+});
+
+function confirmDialog({ title, message, confirm = 'OK', cancel = 'Cancel', danger = false }) {
+    return new Promise((resolve) => {
+        const d = $('#confirm-dialog');
+        setSheetHtml(d, `<h2>${esc(title)}</h2><p>${esc(message)}</p>
+            <div class="btn-row"><button class="btn" data-answer="no">${esc(cancel)}</button>
+            <button class="btn ${danger ? 'btn-danger' : 'btn-primary'}" data-answer="yes">${esc(confirm)}</button></div>`);
+        let settled = false;
+        const done = (answer) => {
+            if (settled) return;
+            settled = true;
+            d._resolve = null;
+            resolve(answer); // settle first so a later UI error can never leave the caller hanging
+            try {
+                if (d.open) d.close();
+                placeToastHost();
+            } catch (e) { console.error(e); }
+        };
+        d._resolve = done;
+        d.querySelector('[data-answer="no"]').onclick = () => done(false);
+        d.querySelector('[data-answer="yes"]').onclick = () => done(true);
+        d.oncancel = (e) => { e.preventDefault(); done(false); };
+        d.showModal();
+        d.querySelector('[data-answer="no"]').focus();
+    });
+}
+
+// Drag a sheet down by its handle/header to dismiss it
+let drag = null;
+document.addEventListener('pointerdown', (e) => {
+    const handle = e.target.closest('.sheet-grab, .sheet-head');
+    if (!handle || e.target.closest('button, input, a, label')) return;
+    const dialog = handle.closest('dialog.sheet');
+    if (!dialog || !dialog.open) return;
+    drag = { dialog, y0: e.clientY, dy: 0, t0: performance.now() };
+    dialog.style.transition = 'none';
+});
+document.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    drag.dy = Math.max(0, e.clientY - drag.y0);
+    drag.dialog.style.transform = drag.dy ? `translateY(${drag.dy}px)` : '';
+});
+function endDrag() {
+    if (!drag) return;
+    const { dialog, dy, t0 } = drag;
+    drag = null;
+    const fast = dy > 40 && dy / (performance.now() - t0) > 0.6;
+    if (dy > 120 || fast) { closeSheet(dialog); return; }
+    dialog.style.transition = 'transform 0.2s var(--ease)';
+    dialog.style.transform = '';
+    setTimeout(() => { dialog.style.transition = ''; }, 220);
+}
+document.addEventListener('pointerup', endDrag);
+document.addEventListener('pointercancel', endDrag);
+
+// ===== Toasts & banners =====
+// Kept as a reference so it can always be re-attached, wherever it was moved to.
+const TOAST_HOST = document.getElementById('toast-host');
+let toastTimer = null;
+let dismissCurrentToast = null;
+
+// A modal <dialog> makes everything outside it inert, so a toast with an Undo button
+// must live inside the topmost open sheet to stay tappable.
+function placeToastHost() {
+    const host = TOAST_HOST;
+    const alert = $('#confirm-dialog');
+    const open = sheetStack.filter((d) => !d._closing);
+    const container = alert.open ? alert : open[open.length - 1] || document.body;
+    const visible = host.children.length > 0;
+    if (host.parentElement !== container) {
+        try { if (host.matches(':popover-open')) host.hidePopover(); } catch (e) { /* not open */ }
+        container.append(host);
+    }
+    const inSheet = container !== document.body;
+    host.classList.toggle('is-top', inSheet);
+    host.style.setProperty('--toast-top', `${toastTop(container)}px`);
+    if (visible) {
+        // Re-show so it sits above the sheet's own content in the top layer
         try {
-            const existing = await cache.match(url);
-            if (!existing) {
-                const resp = await fetch(url, { mode: 'no-cors' });
-                await cache.put(url, resp);
+            if (host.showPopover) {
+                if (host.matches(':popover-open')) host.hidePopover();
+                host.showPopover();
             }
-        } catch (e) {
-            failed++;
-        }
-        done++;
-        if (progressEl) progressEl.textContent = `Downloading… ${done}/${urls.length}`;
-    }
-    if (progressEl) {
-        progressEl.textContent = failed > 0
-            ? `Done, but ${failed} of ${urls.length} failed — retry later`
-            : `All ${urls.length} animations saved for offline use`;
+        } catch (e) { /* popover unsupported - plain fixed element */ }
     }
 }
 
-// ===== Rest Timer =====
-const restTimer = { endTime: 0, intervalId: null };
-
-function parseRestSeconds(restStr) {
-    const m = /([\d.]+)\s*min/.exec(restStr || '');
-    if (!m) return 0;
-    return Math.round(parseFloat(m[1]) * 60);
+// Where a toast goes inside a sheet: just below the sheet's header, so the handle, title and
+// close button stay usable. Measured from layout (offsets), not getBoundingClientRect, because
+// the sheet may still be mid slide-in. On short screens (small phone, keyboard open) the space
+// below the header is the logger itself, so the toast goes to the very top instead.
+function toastTop(container) {
+    const head = container.querySelector?.('.sheet-head');
+    const vh = window.innerHeight;
+    if (!head || vh < 600) return 8;
+    const sheetTop = container.classList.contains('sheet') ? vh - container.offsetHeight : container.offsetTop;
+    return Math.max(8, Math.min(sheetTop + head.offsetTop + head.offsetHeight + 6, vh - 120));
 }
 
-function startRestTimer(seconds, label) {
-    if (seconds <= 0) return;
-    stopRestTimer();
-    restTimer.endTime = Date.now() + seconds * 1000;
-    const labelEl = document.getElementById('rest-timer-label');
-    if (labelEl) labelEl.textContent = label || '';
-    document.getElementById('rest-timer')?.classList.add('active');
-    updateRestTimer();
-    // Anchored to endTime, so throttled intervals can't drift the countdown
-    restTimer.intervalId = setInterval(updateRestTimer, 250);
+function dismissToast() {
+    dismissCurrentToast?.();
 }
 
-function updateRestTimer() {
-    const remaining = Math.max(0, Math.ceil((restTimer.endTime - Date.now()) / 1000));
-    const timeEl = document.getElementById('rest-timer-time');
-    if (timeEl) timeEl.textContent = `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}`;
-    if (remaining <= 0) {
-        stopRestTimer();
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-        playBeep();
-        showToast('Rest over — next set!');
+function showToast(message, { action, onAction, duration, error = false } = {}) {
+    const host = TOAST_HOST;
+    clearTimeout(toastTimer);
+    host.replaceChildren();
+    const toast = document.createElement('div');
+    toast.className = `toast${error ? ' is-error' : ''}`;
+    toast.setAttribute('role', error ? 'alert' : 'status');
+    const text = document.createElement('span');
+    text.textContent = message;
+    toast.append(text);
+    let gone = false;
+    const dismiss = () => {
+        if (gone) return;
+        gone = true;
+        clearTimeout(toastTimer);
+        if (dismissCurrentToast === dismiss) dismissCurrentToast = null;
+        toast.classList.add('is-leaving');
+        setTimeout(() => {
+            toast.remove();
+            if (!host.children.length) { try { host.hidePopover?.(); } catch (e) { /* not open */ } }
+        }, 180);
+    };
+    if (action) {
+        const btn = document.createElement('button');
+        btn.textContent = action;
+        btn.addEventListener('click', () => {
+            if (gone) return; // one shot: a double tap must not undo twice
+            armShield();
+            dismiss();
+            onAction();
+        });
+        toast.append(btn);
     }
+    host.append(toast);
+    dismissCurrentToast = dismiss;
+    placeToastHost();
+    toastTimer = setTimeout(dismiss, duration || (action ? 4500 : 2400));
 }
 
-function stopRestTimer() {
-    if (restTimer.intervalId) clearInterval(restTimer.intervalId);
-    restTimer.intervalId = null;
-    document.getElementById('rest-timer')?.classList.remove('active');
+function showBanner(id, message, actionLabel, onAction, isError = false) {
+    hideBanner(id);
+    const el = document.createElement('div');
+    el.className = `banner ${isError ? 'is-error' : ''}`;
+    el.dataset.banner = id;
+    el.setAttribute('role', isError ? 'alert' : 'status');
+    const text = document.createElement('span');
+    text.textContent = message;
+    el.append(text);
+    if (actionLabel) {
+        const btn = document.createElement('button');
+        btn.textContent = actionLabel;
+        btn.addEventListener('click', () => { armShield(); onAction(); });
+        el.append(btn);
+    }
+    const close = document.createElement('button');
+    close.className = 'banner-close';
+    close.setAttribute('aria-label', 'Dismiss');
+    close.innerHTML = icon('x', 'icon-sm');
+    close.addEventListener('click', () => {
+        armShield(); // the card under the banner must not catch the second tap of a double tap
+        el.classList.add('is-leaving');
+        setTimeout(() => el.remove(), 200);
+    });
+    el.append(close);
+    $('#banner-host').append(el);
 }
-
-function playBeep() {
-    try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = 880;
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.5);
-        osc.onended = () => ctx.close();
-    } catch (e) { /* audio unavailable — vibration and toast still fire */ }
-}
-
-// ===== Screen Wake Lock =====
-async function acquireWakeLock() {
-    if (!('wakeLock' in navigator)) return;
-    try {
-        await navigator.wakeLock.request('screen');
-    } catch (e) { /* denied or unsupported — not critical */ }
+function hideBanner(id) {
+    $(`#banner-host [data-banner="${id}"]`)?.remove();
 }
 
 // ===== Service worker & updates =====
+let swRegistration = null;
+let lastUpdateCheck = 0;
+
+// An installed PWA resumes from the app switcher without reloading, so the browser never
+// re-checks sw.js on its own; check when the app comes back to the foreground (throttled).
+function checkForUpdate() {
+    if (!swRegistration || !navigator.onLine || Date.now() - lastUpdateCheck < 10 * 60000) return;
+    // Only a check that actually reached the server counts against the throttle
+    swRegistration.update().then(() => { lastUpdateCheck = Date.now(); }, () => { /* offline */ });
+}
+
 function registerServiceWorker() {
     if (!('serviceWorker' in navigator)) return;
     window.addEventListener('load', async () => {
         try {
-            const registration = await navigator.serviceWorker.register('./sw.js');
-            registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                if (!newWorker) return;
-                newWorker.addEventListener('statechange', () => {
-                    // 'installed' with an active controller = an update is waiting
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        showUpdateToast(newWorker);
-                    }
+            const hadController = !!navigator.serviceWorker.controller;
+            const reg = await navigator.serviceWorker.register('./sw.js');
+            if (!reg) return;
+            swRegistration = reg;
+            lastUpdateCheck = Date.now(); // the browser checks on load itself
+            const offer = (worker) => showBanner('update', 'A new version of the app is ready.', 'Update', () => worker.postMessage({ type: 'SKIP_WAITING' }));
+            if (reg.waiting && hadController) offer(reg.waiting);
+            reg.addEventListener('updatefound', () => {
+                const worker = reg.installing;
+                worker?.addEventListener('statechange', () => {
+                    if (worker.state === 'installed' && navigator.serviceWorker.controller) offer(worker);
                 });
             });
             let reloading = false;
             navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (reloading) return;
+                if (!hadController || reloading) return; // first install: nothing to reload
                 reloading = true;
                 window.location.reload();
             });
@@ -947,608 +2000,308 @@ function registerServiceWorker() {
     });
 }
 
-function showUpdateToast(worker) {
-    const existing = document.querySelector('.toast');
-    if (existing) existing.remove();
-    const toast = document.createElement('div');
-    toast.className = 'toast update-toast show';
-    toast.textContent = 'Update available — tap to reload';
-    toast.addEventListener('click', () => worker.postMessage({ type: 'SKIP_WAITING' }));
-    document.body.appendChild(toast);
-}
-
-// ===== Settings modal =====
-function openSettings() {
-    renderStorageStatus();
-    document.getElementById('settings-modal')?.classList.add('active');
-}
-
-function closeSettings() {
-    document.getElementById('settings-modal')?.classList.remove('active');
-}
-
-function getExerciseData(week, session, exerciseName) {
-    return state.workoutData[`w${week}_s${session}_${exerciseName}`] || { sets: [] };
-}
-
-function setExerciseData(week, session, exerciseName, data) {
-    state.workoutData[`w${week}_s${session}_${exerciseName}`] = data;
-    saveState();
-}
-
-function getSubstitutionOverride(week, session, originalName) {
-    return state.substitutionOverrides[`w${week}_s${session}_${originalName}`] || null;
-}
-
-function setSubstitutionOverride(week, session, originalName, newName) {
-    state.substitutionOverrides[`w${week}_s${session}_${originalName}`] = newName;
-    saveState();
-}
-
-function clearSubstitutionOverride(week, session, originalName) {
-    delete state.substitutionOverrides[`w${week}_s${session}_${originalName}`];
-    saveState();
-}
-
-// ===== UI Elements =====
-const elements = {};
-function initElements() {
-    elements.currentWeek = document.getElementById('currentWeek');
-    elements.prevWeek = document.getElementById('prevWeek');
-    elements.nextWeek = document.getElementById('nextWeek');
-    elements.exerciseList = document.getElementById('exerciseList');
-    elements.modal = document.getElementById('input-modal');
-    elements.modalExerciseName = document.getElementById('modal-exercise-name');
-    elements.lastWeekInfo = document.getElementById('last-week-info');
-    elements.warmupInfo = document.getElementById('warmup-info');
-    elements.setButtons = document.getElementById('set-buttons');
-    elements.weightInput = document.getElementById('weight-input');
-    elements.repsInput = document.getElementById('reps-input');
-    elements.progressStats = document.getElementById('progressStats');
-    elements.progressHistory = document.getElementById('progressHistory');
-    elements.sessionBtns = document.querySelectorAll('.session-btn');
-    elements.tabs = document.querySelectorAll('.tab');
-    elements.tabContents = document.querySelectorAll('.tab-content');
-}
-
-// ===== Render Functions =====
-function renderWeekDisplay() {
-    if (!elements.currentWeek) return;
-    const info = getPhaseInfo(state.currentWeek);
-    elements.currentWeek.innerHTML = `
-        <div class="week-main">Week ${state.currentWeek}/${TOTAL_WEEKS}</div>
-        <div class="week-sub">${info.phaseName} - ${info.blockName}</div>
-    `;
-    if (elements.prevWeek) elements.prevWeek.disabled = state.currentWeek <= 1;
-    if (elements.nextWeek) elements.nextWeek.disabled = state.currentWeek >= TOTAL_WEEKS;
-}
-
-function updateSessionButtons() {
-    elements.sessionBtns?.forEach(btn => {
-        const session = parseInt(btn.dataset.session);
-        btn.classList.remove('active', 'completed');
-        if (session === state.currentSession) btn.classList.add('active');
-        
-        const exercises = getExercisesForWeek(state.currentWeek, session);
-        if (exercises.length > 0) {
-            const allCompleted = exercises.every(ex => {
-                const data = getExerciseData(state.currentWeek, session, ex.name);
-                return data.sets && data.sets.length >= ex.sets;
-            });
-            if (allCompleted) btn.classList.add('completed');
-        }
-    });
-}
-
-function renderExercises() {
-    const sessionType = sessionTypes[state.currentSession] || { name: 'Unknown Session', focus: '' };
-    const exercises = getExercisesForWeek(state.currentWeek, state.currentSession);
-    if (!elements.exerciseList) return;
-
-    if (!exercises || exercises.length === 0) {
-        elements.exerciseList.innerHTML = `
-            <div class="rest-day-card">
-                <div class="rest-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg></div>
-                <h2>Rest Day</h2>
-                <p>Take it easy! Your muscles grow during rest.</p>
-            </div>`;
-        return;
-    }
-
-    const info = getPhaseInfo(state.currentWeek);
-    let html = `
-        <div class="day-header">
-            <h2>${sessionType.name}</h2>
-            <span class="day-focus">${sessionType.focus}</span>
-            <span class="block-badge">${info.phaseName} - ${info.blockName}</span>
-        </div>
-    `;
-
-    exercises.forEach((exercise, index) => {
-        const currentData = getExerciseData(state.currentWeek, state.currentSession, exercise.name);
-        let lastWeekData = null;
-        
-        if (state.currentWeek > 1) {
-            const prevWeek = state.currentWeek - 1;
-            const prevInfo = getPhaseInfo(prevWeek);
-            if (info.block === prevInfo.block) {
-                lastWeekData = getExerciseData(prevWeek, state.currentSession, exercise.name);
+// ===== Event wiring =====
+const ACTIONS = {
+    'week-prev': () => setWeek(state.currentWeek - 1),
+    'week-next': () => setWeek(state.currentWeek + 1),
+    'start-week': () => {
+        const next = state.currentWeek + 1;
+        if (next > TOTAL_WEEKS) return;
+        state.currentSession = SESSIONS.find((s) => !sessionProgress(next, s).complete) || 1;
+        setWeek(next);
+    },
+    'open-weeks': openWeeks,
+    'pick-week': (el) => { setWeek(+el.dataset.week); closeSheet($('#week-sheet')); },
+    'open-settings': () => { renderSettings(); openSheet($('#settings-sheet')); },
+    session: (el) => setSession(+el.dataset.session),
+    tab: (el) => switchTab(el.dataset.tab),
+    dismiss: (el) => { state.dismissed[el.dataset.key] = true; saveState(); render(); },
+    'open-exercise': (el) => openExercise(state.currentWeek, state.currentSession, +el.dataset.index),
+    'close-sheet': (el) => closeSheet(el.closest('dialog')),
+    'goto-exercise': (el) => switchExercise(+el.dataset.index),
+    'pick-set': (el) => {
+        const sh = ui.sheet;
+        const i = +el.dataset.set;
+        if (!sh || sh.active === i) return;
+        sh.active = i;
+        sh.draft = null;
+        renderExerciseSheet();
+    },
+    'add-set': () => {
+        const sh = ui.sheet;
+        if (!sh) return;
+        sh.active = getEntry(sh.week, sh.session, currentExercise().name).sets.length;
+        sh.draft = null;
+        renderExerciseSheet();
+        requestAnimationFrame(revealActiveRow);
+    },
+    'cancel-edit': () => {
+        const sh = ui.sheet;
+        const ex = currentExercise();
+        if (!sh || !ex) return;
+        const n = getEntry(sh.week, sh.session, ex.name).sets.length;
+        sh.active = n < ex.sets ? n : null;
+        sh.draft = null;
+        renderExerciseSheet();
+    },
+    'log-set': () => logSet(),
+    'log-same': () => {
+        const sh = ui.sheet;
+        const p = previousEntry(sh.week, sh.session, currentExercise())?.sets[sh.active];
+        if (p) logSet({ weight: p.weight, reps: p.reps });
+    },
+    'delete-set': deleteSet,
+    'cycle-step': () => {
+        const name = normalizeExerciseName(shownName(ui.sheet.week, ui.sheet.session, currentExercise()));
+        const cur = state.prefs.steps[name] || DEFAULT_STEP;
+        state.prefs.steps[name] = WEIGHT_STEPS[(WEIGHT_STEPS.indexOf(cur) + 1) % WEIGHT_STEPS.length];
+        saveState();
+        saveDraft();
+        renderSheetFooter();
+    },
+    'open-swap': openSwap,
+    'choose-swap': (el) => chooseSwap(el.dataset.name),
+    'open-media': (el) => openMedia(el.dataset.gif, el.dataset.title, el.dataset.note),
+    'rest-adjust': (el) => adjustRest(+el.dataset.delta),
+    'rest-skip': stopRest,
+    'open-rest-exercise': () => {
+        const ref = state.timer?.ref;
+        if (ref && exercisesFor(ref.week, ref.session)[ref.index]) {
+            if (state.currentWeek !== ref.week || state.currentSession !== ref.session || state.activeTab !== 'workout') {
+                state.currentWeek = ref.week;
+                state.currentSession = ref.session;
+                state.activeTab = 'workout';
+                saveState();
+                render();
             }
+            // Land the list on that exercise, so it is in view when the sheet closes again
+            $(`.ex-card[data-index="${ref.index}"]`)?.scrollIntoView({ block: 'center' });
+            openExercise(ref.week, ref.session, ref.index);
         }
+    },
+    'toggle-warmup': (el) => toggleWarmup(el.dataset.id),
+    'reset-warmup': () => { state.warmup = { date: '', done: [] }; saveState(); renderWarmup(); },
+    'progress-block': (el) => { ui.progressBlock = +el.dataset.block; renderProgress(); },
+    'toggle-history': (el) => {
+        const key = el.dataset.key;
+        if (ui.openHistory.has(key)) ui.openHistory.delete(key); else ui.openHistory.add(key);
+        renderProgress();
+    },
+    'toggle-volume-table': () => { ui.showVolumeTable = !ui.showVolumeTable; renderProgress(); },
+    export: exportBackup,
+    import: () => $('#import-file').click(),
+    'download-parked': downloadParked,
+    'download-media': downloadMedia,
+    'reset-all': resetAll
+};
 
-        const targetSets = exercise.sets;
-        const completedSets = currentData.sets?.length || 0;
-        const isComplete = completedSets >= targetSets;
-        const warmupSets = getWarmupSetsForExercise(state.currentWeek, exercise.name);
-        const warmupHtml = warmupSets !== null ? `<div class="exercise-warmup">Warm-up sets: ${warmupSets}</div>` : '';
-
-        let setPillsHtml = '';
-        for (let i = 0; i < targetSets; i++) {
-            const setData = currentData.sets?.[i];
-            if (setData) {
-                setPillsHtml += `<div class="set-pill completed"><span class="set-number">S${i + 1}</span>${formatSet(setData.weight, setData.reps)}</div>`;
-            } else {
-                setPillsHtml += `<div class="set-pill"><span class="set-number">S${i + 1}</span>--</div>`;
-            }
-        }
-
-        let lastWeekHtml = '';
-        if (lastWeekData?.sets?.length > 0) {
-            const best = lastWeekData.sets.reduce((max, s) => (s.weight > max.weight) ? s : max, lastWeekData.sets[0]);
-            lastWeekHtml = `<div class="last-week-preview">Last week: <strong>${formatSet(best.weight, best.reps)}</strong></div>`;
-        }
-
-        // Check for substitution override
-        const subOverride = getSubstitutionOverride(state.currentWeek, state.currentSession, exercise.name);
-        const displayName = subOverride || exercise.name;
-        const isSubstituted = subOverride !== null;
-        
-        const gifUrl = getExerciseGif(displayName);
-        const svgIcon = getExerciseIcon(displayName);
-
-        const svgIconEncoded = btoa(svgIcon);
-
-        // Build substitution options HTML with clickable options
-        let subsHtml = '';
-        if (exercise.sub1 || exercise.sub2) {
-            subsHtml = `<div class="exercise-subs" onclick="event.stopPropagation()">
-                <span class="subs-label">Swap to:</span>
-                ${exercise.sub1 ? `<span class="sub-option clickable" data-original="${exercise.name}" data-sub="${exercise.sub1}">${exercise.sub1}</span>` : ''}
-                ${exercise.sub2 ? `<span class="sub-option clickable" data-original="${exercise.name}" data-sub="${exercise.sub2}">${exercise.sub2}</span>` : ''}
-                ${isSubstituted ? `<span class="sub-option revert" data-original="${exercise.name}">↩ Revert</span>` : ''}
-            </div>`;
-        }
-
-        html += `
-            <div class="exercise-card ${isComplete ? 'completed' : ''}${isSubstituted ? ' substituted' : ''}" data-exercise-index="${index}">
-                <div class="exercise-gif">
-                    <img src="${gifUrl}" alt="" loading="lazy" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,${svgIconEncoded}';">
-                </div>
-                <div class="exercise-content">
-                    <div class="exercise-header">
-                        <div>
-                            <div class="exercise-name selectable">${displayName}</div>
-                            ${isSubstituted ? `<div class="original-exercise">Originally: ${exercise.name}</div>` : ''}
-                            <div class="exercise-target">${targetSets} sets x ${exercise.reps} | Rest: ${exercise.rest}</div>
-                            ${warmupHtml}
-                            ${exercise.technique !== 'N/A' ? `<div class="exercise-technique">${exercise.technique}</div>` : ''}
-                        </div>
-                        <span class="exercise-badge">${completedSets}/${targetSets}</span>
-                    </div>
-                    <div class="sets-display">${setPillsHtml}</div>
-                    ${lastWeekHtml}
-                    <div class="exercise-notes">${exercise.notes}</div>
-                    ${subsHtml}
-                </div>
-            </div>`;
-    });
-
-    elements.exerciseList.innerHTML = html;
-
-    document.querySelectorAll('.exercise-card').forEach(card => {
-        let touchMoved = false;
-        
-        card.addEventListener('touchstart', () => {
-            touchMoved = false;
-        }, { passive: true });
-        
-        card.addEventListener('touchmove', () => {
-            touchMoved = true;
-        }, { passive: true });
-        
-        card.addEventListener('click', (e) => {
-            // Don't trigger if tapping on subs area
-            if (e.target.closest('.exercise-subs')) return;
-            // Don't trigger if user was scrolling
-            if (touchMoved) return;
-            // Don't trigger if user is selecting text
-            if (window.getSelection().toString()) return;
-            
-            const index = parseInt(card.dataset.exerciseIndex);
-            openExerciseModal(index);
-        });
-    });
-
-    // Handle substitution clicks
-    document.querySelectorAll('.sub-option.clickable').forEach(sub => {
-        sub.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const originalName = sub.dataset.original;
-            const newName = sub.dataset.sub;
-            setSubstitutionOverride(state.currentWeek, state.currentSession, originalName, newName);
-            renderExercises();
-        });
-    });
-
-    // Handle revert clicks
-    document.querySelectorAll('.sub-option.revert').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const originalName = btn.dataset.original;
-            clearSubstitutionOverride(state.currentWeek, state.currentSession, originalName);
-            renderExercises();
-        });
-    });
-
-    updateSessionButtons();
+// ===== Tap shield =====
+// Most taps change what is under the finger (a sheet closes, the footer re-lays out, a new
+// week renders). The second tap of a quick double tap must then not land on whatever took the
+// first one's place - e.g. a Log button. After such a tap every tap is swallowed briefly.
+// Controls that are meant to be tapped repeatedly stay live.
+// (pick-set: a second tap lands on the same set row, which is a no-op)
+const FREE_ACTIONS = new Set(['rest-adjust', 'cycle-step', 'week-prev', 'week-next', 'pick-set', 'toggle-warmup', 'toggle-history', 'progress-block', 'toggle-volume-table']);
+const SHIELD_MS = 450;
+// Actions that put a whole new screen or sheet under the finger get a longer window; e.g. a
+// swap option sits right above the exercise sheet's Log button.
+const SHIELD_FOR = { 'choose-swap': 750, 'start-week': 650, 'open-rest-exercise': 650, 'open-exercise': 600 };
+const shieldActive = () => performance.now() < ui.inputLockUntil;
+function armShield(ms = SHIELD_MS) {
+    ui.inputLockUntil = Math.max(ui.inputLockUntil, performance.now() + ms);
 }
 
-function openExerciseModal(exerciseIndex) {
-    const exercises = getExercisesForWeek(state.currentWeek, state.currentSession);
-    const exercise = exercises[exerciseIndex];
-    if (!exercise) return;
+// Taps on a sheet that is still sliding in (or already sliding out) are stray second taps
+function sheetBusy(el) {
+    const dialog = el.closest('dialog.sheet');
+    return !!dialog && (dialog._closing || performance.now() - (dialog._openedAt || 0) < OPEN_GRACE_MS);
+}
 
-    // Check for substitution override
-    const subOverride = getSubstitutionOverride(state.currentWeek, state.currentSession, exercise.name);
-    const displayName = subOverride || exercise.name;
+// Is this pointer/click target a control the shield should let through?
+function isFreeTarget(target) {
+    const el = target.closest?.('[data-action]');
+    return !!el && FREE_ACTIONS.has(el.dataset.action);
+}
 
-    state.currentExercise = { ...exercise, index: exerciseIndex, displayName: displayName };
-    const currentData = getExerciseData(state.currentWeek, state.currentSession, exercise.name);
-
-    let lastWeekData = null;
-    if (state.currentWeek > 1) {
-        const prevWeek = state.currentWeek - 1;
-        const info = getPhaseInfo(state.currentWeek);
-        const prevInfo = getPhaseInfo(prevWeek);
-        if (info.block === prevInfo.block) {
-            lastWeekData = getExerciseData(prevWeek, state.currentSession, exercise.name);
+function wireEvents() {
+    // Capture phase: runs before anything else, so a shielded tap can't focus an input,
+    // toggle a <summary>, step a stepper or start a drag either.
+    // A tap is one gesture: if its press was swallowed, its click (which arrives ~100 ms later,
+    // possibly after the window has ended) is swallowed too.
+    let swallowClickUntil = 0;
+    const block = (e) => { e.preventDefault(); e.stopPropagation(); };
+    const shield = (e) => {
+        // Only real user input: the app's own programmatic clicks (backup download link,
+        // file picker) must never be swallowed
+        if (!e.isTrusted || !(e.target instanceof Element)) return;
+        if (e.type === 'click' && performance.now() < swallowClickUntil) {
+            swallowClickUntil = 0;
+            block(e);
+            return;
         }
-    }
-
-    if (elements.modalExerciseName) elements.modalExerciseName.textContent = displayName;
-
-    // Parse default reps from exercise.reps (e.g., "10-12" -> 10, "8" -> 8)
-    const repsStr = exercise.reps.toString();
-    const defaultReps = parseInt(repsStr.split('-')[0]) || parseInt(repsStr) || 10;
-
-    if (lastWeekData?.sets?.length > 0 && elements.lastWeekInfo) {
-        const lastSets = lastWeekData.sets.map((s, i) => `S${i+1}: ${formatSet(s.weight, s.reps)}`).join(' | ');
-        elements.lastWeekInfo.innerHTML = `<h4>Last Week</h4><div class="values">${lastSets}</div>`;
-        elements.lastWeekInfo.style.display = 'block';
-        const prefill = getLastWeekSetFor(lastWeekData, currentData.sets?.length || 0);
-        if (elements.weightInput) elements.weightInput.value = prefill.weight;
-        if (elements.repsInput) elements.repsInput.value = prefill.reps || defaultReps;
-    } else {
-        if (elements.lastWeekInfo) elements.lastWeekInfo.style.display = 'none';
-        if (elements.weightInput) elements.weightInput.value = 0;
-        if (elements.repsInput) elements.repsInput.value = defaultReps;
-    }
-
-    if (elements.warmupInfo) {
-        const warmupSets = getWarmupSetsForExercise(state.currentWeek, exercise.name);
-        if (warmupSets !== null) {
-            elements.warmupInfo.textContent = `Warm-up sets: ${warmupSets}`;
-            elements.warmupInfo.style.display = 'block';
-        } else {
-            elements.warmupInfo.style.display = 'none';
-        }
-    }
-
-    const targetSets = exercise.sets;
-    let setBtnsHtml = '';
-    for (let i = 0; i < targetSets; i++) {
-        const setData = currentData.sets?.[i];
-        const isCompleted = setData ? 'completed' : '';
-        const isActive = i === (currentData.sets?.length || 0) ? 'active' : '';
-        const label = setData ? formatSet(setData.weight, setData.reps) : `Set ${i + 1}`;
-        setBtnsHtml += `<button class="set-btn ${isCompleted} ${isActive}" data-set="${i}">${label}</button>`;
-    }
-
-    if (elements.setButtons) elements.setButtons.innerHTML = setBtnsHtml;
-
-    const repeatBtn = document.getElementById('repeat-set');
-    const updateRepeatBtn = () => {
-        if (!repeatBtn) return;
-        const target = getLastWeekSetFor(lastWeekData, state.currentSetIndex);
-        const alreadyLogged = currentData.sets?.[state.currentSetIndex];
-        if (target && !alreadyLogged) {
-            repeatBtn.style.display = 'block';
-            repeatBtn.textContent = `↻ Same as last week — ${formatSet(target.weight, target.reps)}`;
-            repeatBtn.onclick = () => {
-                if (elements.weightInput) elements.weightInput.value = target.weight;
-                if (elements.repsInput) elements.repsInput.value = target.reps;
-                saveSet();
-            };
-        } else {
-            repeatBtn.style.display = 'none';
-            repeatBtn.onclick = null;
-        }
+        const shielded = (shieldActive() || sheetBusy(e.target)) && !isFreeTarget(e.target);
+        if (e.type === 'pointerdown') swallowClickUntil = shielded ? performance.now() + 1500 : 0;
+        if (shielded) block(e);
     };
+    document.addEventListener('pointerdown', shield, true);
+    document.addEventListener('click', shield, true);
 
-    document.querySelectorAll('.set-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            state.currentSetIndex = parseInt(btn.dataset.set);
-            document.querySelectorAll('.set-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const setData = currentData.sets?.[state.currentSetIndex];
-            if (setData) {
-                if (elements.weightInput) elements.weightInput.value = setData.weight;
-                if (elements.repsInput) elements.repsInput.value = setData.reps;
-            }
-            updateRepeatBtn();
-        });
+    document.addEventListener('click', (e) => {
+        const el = e.target.closest('[data-action]');
+        if (!el || el.disabled) return;
+        const action = el.dataset.action;
+        const fn = ACTIONS[action];
+        if (!fn) return;
+        if (!FREE_ACTIONS.has(action)) armShield(SHIELD_FOR[action]);
+        fn(el, e);
     });
 
-    state.currentSetIndex = currentData.sets?.length || 0;
-    updateRepeatBtn();
-    if (elements.modal) elements.modal.classList.add('active');
-}
+    // Steppers: a tap (released without moving) = one step, a still hold = repeat.
+    // A swipe that starts on a stepper scrolls the footer instead (touch-action: pan-y)
+    // and changes nothing - the step only happens on release.
+    let holdTimeout = null, holdInterval = null, stepGesture = null;
+    const stopHold = () => {
+        clearTimeout(holdTimeout);
+        clearInterval(holdInterval);
+        holdTimeout = holdInterval = null;
+        stepGesture = null;
+    };
+    document.addEventListener('pointerdown', (e) => {
+        const btn = e.target.closest('[data-step]');
+        if (!btn) return;
+        e.preventDefault(); // keep focus (and the on-screen keyboard) where it is
+        stopHold();
+        const field = btn.closest('.stepper').dataset.field;
+        const dir = +btn.dataset.step;
+        stepGesture = { field, dir, x: e.clientX, y: e.clientY, repeating: false };
+        holdTimeout = setTimeout(() => {
+            if (!stepGesture) return;
+            stepGesture.repeating = true;
+            stepField(field, dir);
+            holdInterval = setInterval(() => stepField(field, dir), 90);
+        }, 420);
+    });
+    document.addEventListener('pointermove', (e) => {
+        if (stepGesture && Math.hypot(e.clientX - stepGesture.x, e.clientY - stepGesture.y) > 10) stopHold();
+    });
+    document.addEventListener('pointerup', () => {
+        if (stepGesture && !stepGesture.repeating) stepField(stepGesture.field, stepGesture.dir);
+        stopHold();
+    });
+    ['pointercancel', 'blur'].forEach((ev) => window.addEventListener(ev, stopHold));
+    document.addEventListener('contextmenu', (e) => { if (e.target.closest('[data-step]')) e.preventDefault(); });
 
-function closeModal() {
-    if (elements.modal) elements.modal.classList.remove('active');
-    state.currentExercise = null;
-}
+    // Logger inputs
+    document.addEventListener('input', (e) => {
+        if (e.target.id === 'in-weight' || e.target.id === 'in-reps') saveDraft();
+    });
+    document.addEventListener('focusin', (e) => {
+        if (e.target.id !== 'in-weight' && e.target.id !== 'in-reps') return;
+        setTimeout(() => e.target.select(), 0);
+        dismissToast(); // typing the next set: an Undo toast would sit over the logger with the keyboard open
+    });
+    // The on-screen keyboard resizes the viewport: keep a visible toast clear of the logger
+    window.addEventListener('resize', () => { if (TOAST_HOST.children.length) placeToastHost(); });
+    // Keyboard vs touch: only keyboard users get focus moved back to where they were
+    document.addEventListener('keydown', (e) => { if (['Tab', 'Enter', ' ', 'Escape', 'ArrowDown', 'ArrowUp'].includes(e.key)) ui.keyboardNav = true; }, true);
+    document.addEventListener('pointerdown', () => { ui.keyboardNav = false; }, true);
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        if (e.target.id === 'in-weight') { e.preventDefault(); $('#in-reps')?.focus(); }
+        else if (e.target.id === 'in-reps') { e.preventDefault(); e.target.blur(); }
+    });
 
-function saveSet() {
-    if (!state.currentExercise) return;
-    const weight = parseFloat(elements.weightInput?.value) || 0;
-    const reps = parseInt(elements.repsInput?.value) || 0;
-
-    if (weight < 0 || reps <= 0) {
-        showToast('Please enter valid reps (weight 0 = bodyweight)');
-        return;
-    }
-
-    const restSeconds = parseRestSeconds(state.currentExercise.rest);
-    const restLabel = state.currentExercise.displayName || state.currentExercise.name;
-
-    const currentData = getExerciseData(state.currentWeek, state.currentSession, state.currentExercise.name);
-    if (!currentData.sets) currentData.sets = [];
-    currentData.sets[state.currentSetIndex] = { weight, reps };
-    setExerciseData(state.currentWeek, state.currentSession, state.currentExercise.name, currentData);
-
-    showToast(`Set ${state.currentSetIndex + 1} saved: ${formatSet(weight, reps)}`);
-    closeModal();
-    startRestTimer(restSeconds, restLabel);
-    renderExercises();
-}
-
-function showToast(message) {
-    const existing = document.querySelector('.toast');
-    if (existing) existing.remove();
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.classList.add('show'), 10);
-    setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 2500);
-}
-
-function renderProgress() {
-    if (!elements.progressStats || !elements.progressHistory) return;
-
-    let totalSets = 0, totalVolume = 0, totalReps = 0;
-    let workoutsCompleted = 0, workoutsLogged = 0, totalExercisesLogged = 0;
-    let totalScheduledWorkouts = 0;
-    let bestSetVolume = 0, bestSetWeight = 0, bestSetReps = 0, maxWeight = 0;
-
-    for (let week = 1; week <= state.currentWeek; week++) {
-        for (let session = 1; session <= SESSIONS_PER_WEEK; session++) {
-            const exercises = getExercisesForWeek(week, session);
-            if (!exercises || exercises.length === 0) continue;
-            totalScheduledWorkouts++;
-
-            let sessionComplete = true;
-            let sessionLogged = false;
-            exercises.forEach(ex => {
-                const data = getExerciseData(week, session, ex.name);
-                if (data.sets) {
-                    data.sets.forEach(set => {
-                        totalSets++;
-                        totalVolume += (set.weight * set.reps);
-                        totalReps += set.reps;
-                        sessionLogged = true;
-                        if (set.weight > maxWeight) maxWeight = set.weight;
-                        const setVolume = set.weight * set.reps;
-                        if (setVolume > bestSetVolume) {
-                            bestSetVolume = setVolume;
-                            bestSetWeight = set.weight;
-                            bestSetReps = set.reps;
-                        }
-                    });
-                    if (data.sets.length > 0) totalExercisesLogged++;
-                }
-                if (!data.sets || data.sets.length < ex.sets) sessionComplete = false;
-            });
-            if (sessionComplete) workoutsCompleted++;
-            if (sessionLogged) workoutsLogged++;
-        }
-    }
-
-    const info = getPhaseInfo(state.currentWeek);
-    const avgRepsPerSet = totalSets > 0 ? (totalReps / totalSets) : 0;
-    const avgVolumePerSet = totalSets > 0 ? (totalVolume / totalSets) : 0;
-    const avgVolumePerWorkout = workoutsLogged > 0 ? (totalVolume / workoutsLogged) : 0;
-    const consistency = totalScheduledWorkouts > 0 ? Math.round((workoutsCompleted / totalScheduledWorkouts) * 100) : 0;
-
-    elements.progressStats.innerHTML = `
-        <div class="stat-card"><div class="stat-value">${state.currentWeek}/${TOTAL_WEEKS}</div><div class="stat-label">Current Week</div></div>
-        <div class="stat-card"><div class="stat-value">${info.phaseName}</div><div class="stat-label">${info.blockName}</div></div>
-        <div class="stat-card"><div class="stat-value">${workoutsCompleted}</div><div class="stat-label">Workouts Done</div></div>
-        <div class="stat-card"><div class="stat-value">${consistency}%</div><div class="stat-label">Completion Rate</div></div>
-        <div class="stat-card"><div class="stat-value">${totalSets}</div><div class="stat-label">Total Sets</div></div>
-        <div class="stat-card"><div class="stat-value">${totalReps}</div><div class="stat-label">Total Reps</div></div>
-        <div class="stat-card"><div class="stat-value">${Math.round(totalVolume).toLocaleString()}</div><div class="stat-label">Volume (kg)</div></div>
-        <div class="stat-card"><div class="stat-value">${Math.round(avgVolumePerWorkout).toLocaleString()}</div><div class="stat-label">Avg Volume / Workout</div></div>
-        <div class="stat-card"><div class="stat-value">${avgRepsPerSet.toFixed(1)}</div><div class="stat-label">Avg Reps / Set</div></div>
-        <div class="stat-card"><div class="stat-value">${Math.round(avgVolumePerSet).toLocaleString()}</div><div class="stat-label">Avg Volume / Set</div></div>
-        <div class="stat-card"><div class="stat-value">${maxWeight > 0 ? maxWeight : 0}</div><div class="stat-label">Max Weight (kg)</div></div>
-        <div class="stat-card"><div class="stat-value">${bestSetWeight > 0 ? `${bestSetWeight}×${bestSetReps}` : '0×0'}</div><div class="stat-label">Best Set</div></div>
-        <div class="stat-card"><div class="stat-value">${totalExercisesLogged}</div><div class="stat-label">Exercises Logged</div></div>
-    `;
-
-    let historyHtml = '<h3>Recent Workouts</h3>';
-    for (let week = state.currentWeek; week >= Math.max(1, state.currentWeek - 2); week--) {
-        const weekInfo = getPhaseInfo(week);
-        historyHtml += `<div class="week-history"><h4>Week ${week} - ${weekInfo.blockName}</h4>`;
-        for (let session = 1; session <= SESSIONS_PER_WEEK; session++) {
-            const exercises = getExercisesForWeek(week, session);
-            if (!exercises || exercises.length === 0) continue;
-            let sessionSets = 0;
-            exercises.forEach(ex => {
-                const data = getExerciseData(week, session, ex.name);
-                if (data.sets) sessionSets += data.sets.length;
-            });
-            if (sessionSets > 0) {
-                const sessionType = sessionTypes[session];
-                historyHtml += `<div class="history-item"><span>${sessionType.name}</span><span>${sessionSets} sets logged</span></div>`;
-            }
-        }
-        historyHtml += '</div>';
-    }
-
-    elements.progressHistory.innerHTML = historyHtml;
-}
-
-// ===== Event Handlers =====
-function init() {
-    initElements();
-    loadState();
-
-    if (elements.prevWeek) {
-        elements.prevWeek.addEventListener('click', () => {
-            if (state.currentWeek > 1) {
-                state.currentWeek--;
-                saveState();
-                renderWeekDisplay();
-                renderExercises();
-                renderProgress();
-            }
-        });
-    }
-
-    if (elements.nextWeek) {
-        elements.nextWeek.addEventListener('click', () => {
-            if (state.currentWeek < TOTAL_WEEKS) {
-                state.currentWeek++;
-                saveState();
-                renderWeekDisplay();
-                renderExercises();
-                renderProgress();
-            }
-        });
-    }
-
-    elements.sessionBtns?.forEach(btn => {
-        btn.addEventListener('click', () => {
-            state.currentSession = parseInt(btn.dataset.session);
+    // Settings switches
+    document.addEventListener('change', (e) => {
+        const pref = e.target.dataset?.pref;
+        if (pref) {
+            state.prefs[pref] = e.target.checked;
             saveState();
-            updateSessionButtons();
-            renderExercises();
-            document.querySelector('.exercise-card:not(.completed)')
-                ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
+            if (pref === 'keepAwake') updateWakeLock();
+        }
     });
-
-    elements.tabs?.forEach(tab => {
-        tab.addEventListener('click', () => {
-            elements.tabs.forEach(t => t.classList.remove('active'));
-            elements.tabContents?.forEach(c => c.classList.remove('active'));
-            tab.classList.add('active');
-            const targetId = tab.dataset.tab;
-            document.getElementById(targetId)?.classList.add('active');
-            if (targetId === 'progress') renderProgress();
-        });
-    });
-
-    if (elements.modal) {
-        elements.modal.addEventListener('click', (e) => {
-            if (e.target === elements.modal) closeModal();
-        });
-    }
-
-    const closeBtn = document.querySelector('.close-modal');
-    if (closeBtn) closeBtn.addEventListener('click', closeModal);
-
-    const saveBtn = document.getElementById('save-set');
-    if (saveBtn) saveBtn.addEventListener('click', saveSet);
-
-    // Settings modal
-    document.getElementById('settings-btn')?.addEventListener('click', openSettings);
-    document.getElementById('close-settings')?.addEventListener('click', closeSettings);
-    const settingsModal = document.getElementById('settings-modal');
-    if (settingsModal) {
-        settingsModal.addEventListener('click', (e) => {
-            if (e.target === settingsModal) closeSettings();
-        });
-    }
-    document.getElementById('export-data')?.addEventListener('click', () => exportData());
-    document.getElementById('import-data')?.addEventListener('click', () => document.getElementById('import-file')?.click());
-    document.getElementById('import-file')?.addEventListener('change', (e) => {
+    $('#import-file').addEventListener('change', (e) => {
         const file = e.target.files?.[0];
-        if (file) importData(file);
         e.target.value = '';
+        if (file) importBackup(file);
     });
-    document.getElementById('download-media')?.addEventListener('click', downloadAllMedia);
-    const versionEl = document.getElementById('app-version');
-    if (versionEl) versionEl.textContent = APP_VERSION;
-    requestPersistentStorage();
 
-    // +/- steppers: tap steps once, holding auto-repeats
-    function bindStepper(btn, input, direction) {
-        let holdTimeout = null;
-        let holdInterval = null;
-        const step = () => {
-            const stepVal = parseFloat(input.step) || 1;
-            const currentVal = parseFloat(input.value) || 0;
-            const next = Math.max(0, currentVal + direction * stepVal);
-            input.value = Math.round(next * 100) / 100;
-        };
-        const stopHold = () => {
-            clearTimeout(holdTimeout);
-            clearInterval(holdInterval);
-            holdTimeout = null;
-            holdInterval = null;
-        };
-        btn.addEventListener('pointerdown', () => {
-            step();
-            holdTimeout = setTimeout(() => {
-                holdInterval = setInterval(step, 100);
-            }, 450);
+    // Remember whether the sheet's warm-up / coaching-cue sections were opened or closed
+    document.addEventListener('toggle', (e) => {
+        if (e.target.classList?.contains('cues-notes')) ui.cuesOpen = e.target.open;
+        else if (e.target.classList?.contains('cues-warmup')) ui.warmupOpen = e.target.open;
+    }, true);
+
+    // Broken/offline animation -> neutral placeholder (never a different exercise)
+    document.addEventListener('error', (e) => {
+        const img = e.target;
+        if (!(img instanceof HTMLImageElement) || !img.hasAttribute('data-fallback')) return;
+        // A cached error response would otherwise be served forever: drop it so the next view retries
+        if ('caches' in window) caches.open(GIF_CACHE).then((c) => c.delete(img.src)).catch(() => {});
+        const box = img.parentElement;
+        const label = img.dataset.fallback;
+        box.classList.add('is-placeholder');
+        box.querySelector('.demo-zoom')?.remove();
+        img.replaceWith(Object.assign(document.createElement('span'), {
+            className: 'placeholder-inner',
+            innerHTML: `${icon('cloud-off')}${esc(label)}`
+        }));
+    }, true);
+
+    // Dialogs: backdrop tap closes, Escape / back animates, close bookkeeping
+    for (const dialog of $$('dialog.sheet')) {
+        dialog.addEventListener('click', (e) => {
+            if (e.target !== dialog || sheetBusy(dialog)) return;
+            const r = dialog.getBoundingClientRect();
+            const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+            if (!inside) closeSheet(dialog);
         });
-        ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => btn.addEventListener(ev, stopHold));
-        btn.addEventListener('contextmenu', (e) => e.preventDefault());
+        dialog.addEventListener('cancel', (e) => {
+            if (dialog._closing) {
+                // A second quick back press while this one slides away: close the next sheet down
+                e.preventDefault();
+                const below = sheetStack.filter((d) => d !== dialog && !d._closing).pop();
+                if (below) closeSheet(below);
+                return;
+            }
+            if (!e.cancelable) return; // the browser closes it right away; 'close' does the bookkeeping
+            e.preventDefault();
+            closeSheet(dialog);
+        });
+        dialog.addEventListener('close', () => onDialogClosed(dialog));
     }
 
-    document.querySelectorAll('.number-input').forEach(container => {
-        const input = container.querySelector('input');
-        const minusBtn = container.querySelector('.minus');
-        const plusBtn = container.querySelector('.plus');
-        if (minusBtn && input) bindStepper(minusBtn, input, -1);
-        if (plusBtn && input) bindStepper(plusBtn, input, 1);
-    });
-
-    // Rest timer skip
-    document.getElementById('rest-timer-skip')?.addEventListener('click', stopRestTimer);
-
-    // Keep the screen awake while the app is open (re-acquired on return)
-    acquireWakeLock();
     document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') acquireWakeLock();
+        updateWakeLock();
+        if (document.visibilityState === 'visible') {
+            tickRest();
+            checkForUpdate();
+        }
     });
 
-    renderWeekDisplay();
-    renderExercises();
+    // Another tab/window changed the data: pick it up instead of overwriting it later
+    window.addEventListener('storage', (e) => {
+        if (e.key !== STORAGE_KEY || !e.newValue) return;
+        try {
+            state = normalizeState(JSON.parse(e.newValue));
+            render();
+        } catch (err) { /* ignore malformed */ }
+    });
+}
+
+function init() {
+    state = loadState();
+    // Scroll positions are managed by the app; the sheets' history entries must not restore old ones
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    // Reloaded while a sheet was open: drop its leftover history entry, or Back would do nothing once
+    if (history.state?.gtModal) { popGuard++; history.back(); }
+    wireEvents();
+    render();
+    requestPersistentStorage();
+    updateWakeLock();
+    if (unreadableText !== null) {
+        showBanner('unreadable', "Saved workout data couldn't be read. It was kept aside on this phone.", 'Download', () => downloadText(unreadableText, 'gym-tracker-unreadable-data'), true);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', init);
