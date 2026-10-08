@@ -10,8 +10,8 @@ const ctx = vm.createContext({ console });
 for (const file of ['program.js', 'exercises.js']) {
     vm.runInContext(fs.readFileSync(path.join(__dirname, file), 'utf8'), ctx, { filename: file });
 }
-const { PROGRAM, WARMUP, EXERCISE_MEDIA, exerciseMoveId } =
-    vm.runInContext('({ PROGRAM, WARMUP, EXERCISE_MEDIA, exerciseMoveId })', ctx);
+const { PROGRAM, PROGRAM_CHANGES, WARMUP, EXERCISE_MEDIA, exerciseMoveId } =
+    vm.runInContext('({ PROGRAM, PROGRAM_CHANGES, WARMUP, EXERCISE_MEDIA, exerciseMoveId })', ctx);
 
 const errors = [];
 const warnings = [];
@@ -36,6 +36,18 @@ for (const [block, sessions] of Object.entries(PROGRAM.blocks)) {
         }
     }
 }
+// Replaced exercises: saved data is moved from `from` to `to` in that block/session, so `to`
+// must exist there and `from` must be gone. A misspelt `from` can't be caught here (it would
+// just leave the old data behind), so copy it exactly from the old program.
+for (const c of PROGRAM_CHANGES) {
+    const list = PROGRAM.blocks[c.block]?.[c.session];
+    const where = `change block ${c.block} / session ${c.session}`;
+    if (!list) { errors.push(`${where}: no such session`); continue; }
+    if (!list.some((ex) => ex.name === c.to)) errors.push(`${where}: replacement "${c.to}" is not in the program`);
+    if (list.some((ex) => ex.name === c.from)) errors.push(`${where}: replaced "${c.from}" is still in the program`);
+    if (PROGRAM_CHANGES.filter((o) => o.block === c.block && o.session === c.session && o.from === c.from).length > 1) errors.push(`${where}: "${c.from}" listed twice`);
+}
+
 for (const section of WARMUP) {
     for (const item of section.items) {
         if (!EXERCISE_MEDIA.moves[item.move]) errors.push(`warm-up "${item.name}" points at unknown movement "${item.move}"`);

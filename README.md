@@ -2,6 +2,8 @@
 
 Installable, offline-first PWA for logging Jeff Nippard's **Essentials Program 5x/Week**: 12 weeks in 3 blocks (the exercises change every 4 weeks), 5 sessions per week (Upper / Lower / Push / Pull / Legs). All weights in kg. Built for one-handed use on a phone between sets.
 
+The program's bodyweight exercises (pull-ups, dips, leg raises, Nordic and glute-ham curls, hyperextensions, floor crunches) are replaced with machine and cable exercises for the same muscles: lat pulldowns, Smith machine decline press, lying leg curls, cable pull-throughs, and machine and cable crunches. That goes for the default exercises and the swap options. Push-ups stay.
+
 ## Features
 
 - **Workout tab**: week switcher (tap the week for a 12-week overview), one tab per session showing its progress, and a card per exercise with its demo animation, target (sets × reps · intensity · rest), today's logged sets and last week's best. Supersets (A1/A2) are grouped, and the next exercise to do is highlighted.
@@ -32,7 +34,8 @@ All data lives **on the device** in localStorage. Persistent storage is requeste
 
 - **Backup:** Settings (gear icon) → *Export backup* saves a JSON file to Downloads. A dot on the gear reminds you when your last backup is more than 2 weeks old.
 - **Restore / move devices:** copy the JSON file to the new device → Settings → *Restore from backup*. Restoring downloads a copy of the current data first, so nothing can be silently destroyed.
-- **Upgrading from v2:** the first launch of v3 keeps an untouched copy of the old data in localStorage (`nippardEssentials5x_12weeks_v1_pre_v3`). Logged data keeps its exact keys, so nothing has to be migrated.
+- **Upgrading from v2:** the first launch of v3 keeps an untouched copy of the old data in localStorage (`nippardEssentials5x_12weeks_v1_pre_v3`). Logged data keeps its exact keys, except sets under the exercises replaced in v3.1, which move on load (next point).
+- **Replaced exercises (v3.1):** sets logged under a bodyweight exercise that was replaced move to its replacement. Each moved set is labelled with the exercise it was really done as (the old name, or the swap it was done with), so nothing is lost and progress never mixes the two exercises. The exception is Weighted Pullup: those sets were really lat pulldowns, so they count as Lat Pulldown. A swap to an option the program no longer offers goes back to the program exercise, and sets done with it keep their label.
 
 ## Development
 
@@ -74,7 +77,7 @@ The first upgrade from v2 to v3 is automatic: the app reloads itself into v3 a f
 
 ### Notes
 
-- **Exercise names are data keys.** Logged sets are stored under `w{week}_s{session}_{exercise name}`, so renaming an exercise in `program.js` orphans its history.
+- **Exercise names are data keys.** Logged sets are stored under `w{week}_s{session}_{exercise name}`, so renaming an exercise in `program.js` orphans its history. To replace one, add the change to `PROGRAM_CHANGES` in `program.js`: the app moves the logged sets on load, and `audit.js` checks every entry.
 - **Demos are mapped explicitly**, not guessed from keywords. Each animation was checked frame by frame against the exercise. Where the source has no exact match, the closest true variant is used and the exercise screen says what's different. Where nothing trustworthy exists, a neutral placeholder is shown rather than a wrong exercise.
 - Exercise animations are hot-linked from fitnessprogramer.com and cached on-device at runtime only. They are not redistributed in this repo.
 - `progress.json` (personal workout data from the old server-sync setup) is gitignored. It can be loaded via Settings → Restore from backup.

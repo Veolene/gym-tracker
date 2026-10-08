@@ -15,8 +15,7 @@ const EXERCISE_MEDIA = {
         // Chest
         db_bench_press: { muscle: 'Chest', gif: GIF_BASE + '2021/02/Dumbbell-Press.gif', demo: 'Dumbbell bench press' },
         machine_chest_press: { muscle: 'Chest', gif: GIF_BASE + '2021/02/Chest-Press-Machine.gif', demo: 'Machine chest press' },
-        weighted_dip: { muscle: 'Chest', bw: true, gif: GIF_BASE + '2021/06/Chest-Dips.gif', demo: 'Chest dip',
-            note: 'Demo shows a bodyweight dip. Add weight with a dip belt or a dumbbell between your feet.' },
+        decline_press: { muscle: 'Chest', gif: GIF_BASE + '2021/06/Smith-Machine-Decline-Bench-Press.gif', demo: 'Smith machine decline press' },
         cable_chest_press: { muscle: 'Chest', gif: GIF_BASE + '2022/02/Seated-Cable-Chest-Press.gif', demo: 'Seated cable chest press' },
         close_grip_push_up: { muscle: 'Chest', bw: true, gif: GIF_BASE + '2021/02/Diamond-Push-up.gif', demo: 'Diamond push-up',
             note: 'Demo shows the diamond variant. Keep your hands just inside shoulder width, elbows tucked.' },
@@ -32,10 +31,6 @@ const EXERCISE_MEDIA = {
         one_arm_lat_pull_in: { muscle: 'Back', gif: GIF_BASE + '2021/06/Cable-One-Arm-Lat-Pulldown.gif', demo: 'One-arm cable lat pulldown',
             note: 'Demo shows a one-arm pulldown. For the pull-in, sweep your elbow down and in toward your hip.' },
         cable_lat_pullover: { muscle: 'Back', gif: GIF_BASE + '2021/06/Rope-Straight-Arm-Pulldown.gif', demo: 'Straight-arm rope pulldown' },
-        weighted_pull_up: { muscle: 'Back', bw: true, gif: GIF_BASE + '2021/04/Weighted-Pull-up.gif', demo: 'Weighted pull-up' },
-        pull_up: { muscle: 'Back', bw: true, gif: GIF_BASE + '2021/02/Pull-up.gif', demo: 'Pull-up' },
-        neutral_grip_pull_up: { muscle: 'Back', bw: true, gif: GIF_BASE + '2021/02/Pull-up.gif', demo: 'Pull-up',
-            note: 'Demo shows an overhand grip. Use parallel handles with your palms facing each other.' },
 
         // Back - rows
         pendlay_row: { muscle: 'Back', gif: GIF_BASE + '2022/07/Barbell-Pendlay-Row.gif', demo: 'Barbell Pendlay row' },
@@ -97,9 +92,7 @@ const EXERCISE_MEDIA = {
         db_rdl: { muscle: 'Hamstrings', gif: GIF_BASE + '2021/02/Dumbbell-Romanian-Deadlift.gif', demo: 'Dumbbell Romanian deadlift' },
         seated_leg_curl: { muscle: 'Hamstrings', gif: GIF_BASE + '2021/08/Seated-Leg-Curl.gif', demo: 'Seated leg curl' },
         lying_leg_curl: { muscle: 'Hamstrings', gif: GIF_BASE + '2021/02/Leg-Curl.gif', demo: 'Lying leg curl' },
-        nordic_curl: { muscle: 'Hamstrings', bw: true, gif: GIF_BASE + '2021/06/Nordic-Hamstring-Curl.gif', demo: 'Nordic hamstring curl' },
-        glute_ham_raise: { muscle: 'Hamstrings', bw: true, gif: GIF_BASE + '2023/07/Glute-Ham-Raise.gif', demo: 'Glute-ham raise' },
-        hyperextension_45: { muscle: 'Lower back', bw: true, gif: GIF_BASE + '2021/02/hyperextension.gif', demo: '45-degree hyperextension' },
+        cable_pull_through: { muscle: 'Glutes', gif: GIF_BASE + '2021/06/Cable-Pull-Through.gif', demo: 'Standing rope cable pull-through' },
 
         // Calves
         standing_calf_raise: { muscle: 'Calves', gif: GIF_BASE + '2022/04/Standing-Barbell-Calf-Raise.gif', demo: 'Standing barbell calf raise' },
@@ -107,15 +100,8 @@ const EXERCISE_MEDIA = {
         leg_press_calf_raise: { muscle: 'Calves', gif: GIF_BASE + '2021/05/Leg-Press-Calf-Raise.gif', demo: 'Leg press calf raise' },
 
         // Abs
-        hanging_leg_raise: { muscle: 'Abs', bw: true, gif: GIF_BASE + '2021/08/Hanging-Leg-Raises.gif', demo: 'Hanging leg raise' },
-        captains_chair_leg_raise: { muscle: 'Abs', bw: true, gif: GIF_BASE + '2021/05/Captains-Chair-Leg-Raise.gif', demo: 'Captain\'s chair leg raise' },
-        reverse_crunch: { muscle: 'Abs', bw: true, gif: GIF_BASE + '2021/02/Reverse-Crunch-1.gif', demo: 'Reverse crunch' },
         cable_crunch: { muscle: 'Abs', gif: GIF_BASE + '2021/02/Kneeling-Cable-Crunch.gif', demo: 'Kneeling cable crunch' },
         machine_crunch: { muscle: 'Abs', gif: GIF_BASE + '2021/09/Seated-Crunch-Machine.gif', demo: 'Seated crunch machine' },
-        weighted_crunch: { muscle: 'Abs', gif: GIF_BASE + '2022/07/Medicine-Ball-Crunch.gif', demo: 'Medicine ball crunch',
-            note: 'Demo uses a medicine ball. Hold a plate or dumbbell to your chest the same way.' },
-        dead_bug: { muscle: 'Abs', bw: true, gif: GIF_BASE + '2021/05/Dead-Bug.gif', demo: 'Dead bug (alternating)',
-            note: 'Demo alternates one arm and one leg. For the two-arms, two-legs version, extend both arms and both legs together.' },
 
         // Warm-up & mobility
         wu_jumping_jacks: { muscle: 'Warm-up', gif: GIF_BASE + '2021/05/Jumping-jack.gif', demo: 'Jumping jacks' },
@@ -138,7 +124,7 @@ const EXERCISE_MEDIA = {
     names: {
         'flat db press': 'db_bench_press',
         'machine chest press': 'machine_chest_press',
-        'weighted dip': 'weighted_dip',
+        'smith machine decline press': 'decline_press',
         'cable chest press': 'cable_chest_press',
         'close-grip push up': 'close_grip_push_up',
         'incline close-grip push up': 'incline_close_grip_push_up',
@@ -151,10 +137,6 @@ const EXERCISE_MEDIA = {
         '1-arm half-kneeling lat pulldown': 'half_kneeling_1arm_pulldown',
         '1-arm lat pull-in': 'one_arm_lat_pull_in',
         'cable lat pullover': 'cable_lat_pullover',
-        'weighted pullup': 'weighted_pull_up',
-        '2-grip pullup': 'pull_up',
-        '2-grip pull-up': 'pull_up',
-        'neutral-grip pullup': 'neutral_grip_pull_up',
 
         'pendlay row': 'pendlay_row',
         'machine pendlay row': 'machine_row',
@@ -211,21 +193,14 @@ const EXERCISE_MEDIA = {
         'db romanian deadlift': 'db_rdl',
         'seated hamstring curl': 'seated_leg_curl',
         'lying leg curl': 'lying_leg_curl',
-        'nordic ham curl': 'nordic_curl',
-        'glute-ham raise': 'glute_ham_raise',
-        '45° hyperextension': 'hyperextension_45',
+        'cable pull-through': 'cable_pull_through',
 
         'standing calf raise': 'standing_calf_raise',
         'seated calf raise': 'seated_calf_raise',
         'leg press toe press': 'leg_press_calf_raise',
 
-        'hanging leg raise': 'hanging_leg_raise',
-        'roman chair crunch': 'captains_chair_leg_raise',
-        'reverse crunch': 'reverse_crunch',
         'cable crunch': 'cable_crunch',
-        'machine crunch': 'machine_crunch',
-        'plate-weighted crunch': 'weighted_crunch',
-        'two-arms two-legs dead bug': 'dead_bug'
+        'machine crunch': 'machine_crunch'
     }
 };
 

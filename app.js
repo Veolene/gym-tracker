@@ -3,7 +3,7 @@
 // Data lives in program.js (PROGRAM, WARMUP) and exercises.js (EXERCISE_MEDIA).
 // All state is local to the device (localStorage) - see README "Your data".
 
-const APP_VERSION = '3.0.0';                              // keep in sync with CACHE_VERSION in sw.js
+const APP_VERSION = '3.1.0';                              // keep in sync with CACHE_VERSION in sw.js
 const STORAGE_KEY = 'nippardEssentials5x_12weeks_v1';     // never rename: holds everyone's history
 const PRE_V3_BACKUP_KEY = STORAGE_KEY + '_pre_v3';        // untouched copy of data saved by v2
 const GIF_CACHE = 'gif-cache-v1';                         // must match sw.js
@@ -196,10 +196,63 @@ function normalizeState(raw) {
     if (raw.dismissed && typeof raw.dismissed === 'object') {
         for (const [k, v] of Object.entries(raw.dismissed)) if (v === true) s.dismissed[k] = true;
     }
+    applyProgramChanges(s); // after prefs: it can move a weight step too
+    dropStaleSwaps(s);
     return s;
 }
 
 let unreadableText = null; // saved data that failed to parse this launch (offered as a download)
+
+// Exercises that were replaced in the program (PROGRAM_CHANGES, program.js): move their saved
+// sets to the replacement's slot. A moved set is labelled with the exercise it was really done
+// as (set.as): the old name, unless the change says those sets were really the new exercise
+// (doneAsNew, which carries its weight step over as well). A set already done as the
+// replacement (an old swap to it) becomes a plain set of it. So history stays true and "last
+// time" never mixes two exercises. Swaps move too, and dropStaleSwaps then keeps only the ones
+// the new exercise still offers.
+// Idempotent - once moved, the old keys are gone - so it is safe on every load and import.
+function applyProgramChanges(s) {
+    for (const change of PROGRAM_CHANGES) {
+        if (change.doneAsNew) {
+            const fromStep = normalizeExerciseName(change.from), toStep = normalizeExerciseName(change.to);
+            if (fromStep in s.prefs.steps && !(toStep in s.prefs.steps)) s.prefs.steps[toStep] = s.prefs.steps[fromStep];
+            delete s.prefs.steps[fromStep];
+        }
+        const [start, end] = blockRange(change.block);
+        const toBase = parseName(change.to).base; // swap labels carry no "A2: " prefix
+        for (let w = start; w <= end; w++) {
+            const from = dataKey(w, change.session, change.from);
+            const to = dataKey(w, change.session, change.to);
+            const old = s.workoutData[from];
+            if (old) {
+                const moved = old.sets.map((set) => {
+                    if (!set.as) return change.doneAsNew ? set : { ...set, as: change.from };
+                    if (parseName(set.as).base !== toBase) return set;
+                    const plain = { ...set };
+                    delete plain.as;
+                    return plain;
+                });
+                s.workoutData[to] = { sets: [...moved, ...(s.workoutData[to]?.sets || [])] };
+                delete s.workoutData[from];
+            }
+            const swap = s.substitutionOverrides[from];
+            if (swap !== undefined) {
+                delete s.substitutionOverrides[from];
+                if (!s.substitutionOverrides[to]) s.substitutionOverrides[to] = swap;
+            }
+        }
+    }
+}
+
+// A swap is always one of its exercise's alternatives. Drop any the program no longer offers
+// (or for an exercise no longer in that slot); sets logged with it keep their own label.
+function dropStaleSwaps(s) {
+    for (const [key, name] of Object.entries(s.substitutionOverrides)) {
+        const [, week, session, exName] = DATA_KEY_RE.exec(key);
+        const ex = PROGRAM.blocks[blockOf(+week)]?.[session]?.find((e) => e.name === exName);
+        if (!ex?.subs?.includes(name)) delete s.substitutionOverrides[key];
+    }
+}
 
 function loadState() {
     let text = null;
@@ -452,6 +505,9 @@ function exerciseCard(week, session, i, nextIdx, sessionStarted) {
             ? `<span class="set-chip is-done">${esc(fmtSetShort(sets[k]))}</span>`
             : `<span class="set-chip">${k + 1}</span>`);
     }
+    // Sets done as another exercise (an earlier swap, or an exercise the program replaced)
+    const otherSets = sets.filter((s) => doneAs(s, ex) !== shown);
+    const others = [...new Set(otherSets.map((s) => parseName(doneAs(s, ex)).base))];
     const target = [`${ex.sets} × ${range(ex.reps)}`];
     if (tech.kind !== 'super') target.push(tech.label);
     target.push(restText(ex.rest));
@@ -474,6 +530,7 @@ function exerciseCard(week, session, i, nextIdx, sessionStarted) {
             <span class="ex-name">${esc(cur.base)}</span>
             <span class="ex-target">${esc(target.join(' · '))}</span>
             <span class="ex-chips">${chips.join('')}</span>
+            ${others.length ? `<span class="ex-last">${otherSets.length === sets.length ? 'Done as' : 'Some sets done as'} ${esc(others.join(', '))}</span>` : ''}
             ${last}
         </span>
         ${status}

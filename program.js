@@ -18,13 +18,13 @@ const PROGRAM = {
             1: [ // Upper
                 { name: "Flat DB Press (Heavy)", sets: 1, reps: "4-6", rest: "~3 min", technique: "RPE 8-9", warmup: "2-3",
                     notes: "Focus on strength here. Each week add weight or reps. Keep form consistent.",
-                    subs: ["Machine Chest Press", "Weighted Dip"] },
+                    subs: ["Machine Chest Press", "Smith Machine Decline Press"] },
                 { name: "Flat DB Press (Back off)", sets: 1, reps: "8-10", rest: "~3 min", technique: "RPE 9-10", warmup: "0",
                     notes: "Focus on mind-muscle connection with pecs. Drop the weight back and focus on stretch and squeeze!",
-                    subs: ["Machine Chest Press", "Weighted Dip"] },
+                    subs: ["Machine Chest Press", "Smith Machine Decline Press"] },
                 { name: "2-Grip Lat Pulldown", sets: 2, reps: "10-12", rest: "~2 min", technique: "RPE 9-10", warmup: "2",
                     notes: "Do first set wide overhand (1.5x shoulder width), second set underhand (1x shoulder width)",
-                    subs: ["2-Grip Pull-up", "Machine Pulldown"] },
+                    subs: ["Machine Pulldown", "Neutral-Grip Lat Pulldown"] },
                 { name: "Seated DB Shoulder Press", sets: 2, reps: "10-12", rest: "~2 min", technique: "RPE 9-10", warmup: "1",
                     notes: "Bring the dumbbells all the way down, keep your torso upright",
                     subs: ["Machine Shoulder Press", "Standing DB Arnold Press"] },
@@ -47,13 +47,13 @@ const PROGRAM = {
                     subs: ["Machine Squat", "Leg Press"] },
                 { name: "Seated Hamstring Curl", sets: 1, reps: "10-12", rest: "~1.5 min", technique: "Dropset", warmup: "1",
                     notes: "Dropset: perform 10-12 reps, drop the weight by ~50%, perform an additional 10-12 reps. Do seated if available.",
-                    subs: ["Nordic Ham Curl", "Lying Leg Curl"] },
+                    subs: ["Lying Leg Curl"] },
                 { name: "A1: Standing Calf Raise", sets: 2, reps: "10-12", rest: "0 min", technique: "Superset", warmup: "1",
                     notes: "Press all the way up to your toes, stretch your calves at the bottom, don't bounce",
                     subs: ["Seated Calf Raise", "Leg Press Toe Press"] },
-                { name: "A2: Hanging Leg Raise", sets: 2, reps: "10-12", rest: "~1.5 min", technique: "Superset", warmup: "1",
-                    notes: "Knees to chest, controlled reps, straighten legs more to increase difficulty",
-                    subs: ["Roman Chair Crunch", "Reverse Crunch"] }
+                { name: "A2: Machine Crunch", sets: 2, reps: "10-12", rest: "~1.5 min", technique: "Superset", warmup: "1",
+                    notes: "Curl your ribcage down toward your pelvis and pause in the squeeze. Let your abs move the weight, don't pull with your arms.",
+                    subs: ["Cable Crunch"] }
             ],
             3: [ // Push
                 { name: "Machine Shoulder Press", sets: 3, reps: "8-10", rest: "~2 min", technique: "RPE 9-10", warmup: "2",
@@ -61,7 +61,7 @@ const PROGRAM = {
                     subs: ["Seated DB Shoulder Press", "Standing DB Arnold Press"] },
                 { name: "Cable Chest Press", sets: 2, reps: "10-12", rest: "~2 min", technique: "Dropset", warmup: "2",
                     notes: "Can be performed seated or standing. Focus on squeezing your chest. Last set only do a dropset: perform 10-12 reps, drop the weight by ~50%, perform an additional 10-12 reps.",
-                    subs: ["Weighted Dip", "Flat DB Press"] },
+                    subs: ["Machine Chest Press", "Flat DB Press"] },
                 { name: "Triceps Pressdown", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "Dropset", warmup: "1",
                     notes: "Focus on squeezing your triceps to move the weight. Last set only do a dropset: perform 12-15 reps, drop the weight by ~50%, perform an additional 12-15 reps.",
                     subs: ["Cable Triceps Kickback", "DB Triceps Kickback"] },
@@ -76,9 +76,9 @@ const PROGRAM = {
                 { name: "1-Arm Half-Kneeling Lat Pulldown", sets: 1, reps: "10-12", rest: "~1.5 min", technique: "RPE 7-8", warmup: "1",
                     notes: "Keep chest tall, keep elbow tucked in close to your torso, focus on squeezing your lat to move the weight",
                     subs: ["Cable Lat Pullover", "1-Arm Lat Pull-In"] },
-                { name: "Weighted Pullup", sets: 3, reps: "6-8", rest: "~2 min", technique: "RPE 9-10", warmup: "2",
-                    notes: "1.5x shoulder width grip, pull your chest to the bar",
-                    subs: ["Lat Pulldown", "Neutral-Grip Pullup"] },
+                { name: "Lat Pulldown", sets: 3, reps: "6-8", rest: "~2 min", technique: "RPE 9-10", warmup: "2",
+                    notes: "1.5x shoulder width overhand grip, pull the bar to your upper chest. Lock your thighs under the pad and drive your elbows down, no swinging.",
+                    subs: ["Machine Pulldown", "Neutral-Grip Lat Pulldown"] },
                 { name: "Pendlay Row", sets: 2, reps: "8-10", rest: "~2 min", technique: "RPE 9-10", warmup: "2",
                     notes: "Initiate the movement by squeezing your shoulder blades together, pull to your lower chest, avoid using momentum",
                     subs: ["Machine Pendlay Row", "Seated Cable Row"] },
@@ -92,7 +92,7 @@ const PROGRAM = {
             5: [ // Legs
                 { name: "Romanian Deadlift", sets: 2, reps: "10-12", rest: "~2 min", technique: "RPE 8-9", warmup: "2",
                     notes: "Maintain a neutral lower back, set your hips back, don't allow your spine to round",
-                    subs: ["DB Romanian Deadlift", "45° Hyperextension"] },
+                    subs: ["DB Romanian Deadlift", "Cable Pull-Through"] },
                 { name: "Leg Press", sets: 3, reps: "10-12", rest: "~2 min", technique: "RPE 8-9", warmup: "2",
                     notes: "Medium width feet placement on the platform, don't allow your lower back to round",
                     subs: ["Goblet Squat", "DB Walking Lunge"] },
@@ -104,19 +104,19 @@ const PROGRAM = {
                     subs: ["Standing Calf Raise", "Leg Press Toe Press"] },
                 { name: "A2: Cable Crunch", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "Superset", warmup: "1",
                     notes: "Round your back as you crunch",
-                    subs: ["Machine Crunch", "Plate-Weighted Crunch"] }
+                    subs: ["Machine Crunch"] }
             ]
         },
         2: {
             1: [ // Upper
-                { name: "2-Grip Pullup", sets: 2, reps: "8-10", rest: "~2 min", technique: "RPE 9-10", warmup: "1-1",
-                    notes: "First set 1.5x shoulder width grip. Second set 1.0x shoulder width grip",
-                    subs: ["Machine Pulldown", "2-Grip Lat Pulldown"] },
-                { name: "Weighted Dip (Heavy)", sets: 1, reps: "6-8", rest: "~3 min", technique: "RPE 8-9", warmup: "2-3",
-                    notes: "Tuck your elbows at 45°, lean your torso forward 15°, shoulder width or slightly wider grip",
+                { name: "2-Grip Lat Pulldown", sets: 2, reps: "8-10", rest: "~2 min", technique: "RPE 9-10", warmup: "1-1",
+                    notes: "First set overhand at 1.5x shoulder width, second set underhand at shoulder width (the same grips as block 1). Pull to your upper chest by driving your elbows down.",
+                    subs: ["Machine Pulldown", "Neutral-Grip Lat Pulldown"] },
+                { name: "Smith Machine Decline Press (Heavy)", sets: 1, reps: "6-8", rest: "~3 min", technique: "RPE 8-9", warmup: "2-3",
+                    notes: "Set a slight decline (15-30°) so the bar touches your lower chest, grip just outside shoulder width, elbows tucked at 45°. Focus on strength: add weight or reps each week.",
                     subs: ["Machine Chest Press", "Flat DB Press"] },
-                { name: "Weighted Dip (Back off)", sets: 1, reps: "10-12", rest: "~3 min", technique: "RPE 9-10", warmup: "0",
-                    notes: "Tuck your elbows at 45°, lean your torso forward 15°, shoulder width or slightly wider grip",
+                { name: "Smith Machine Decline Press (Back off)", sets: 1, reps: "10-12", rest: "~3 min", technique: "RPE 9-10", warmup: "0",
+                    notes: "Drop the weight back and focus on the stretch and squeeze, lowering under control to your lower chest. Set the safety stops so you can push close to failure.",
                     subs: ["Machine Chest Press", "Flat DB Press"] },
                 { name: "Incline Chest-Supported DB Row", sets: 2, reps: "8-10", rest: "~2 min", technique: "RPE 9-10", warmup: "1",
                     notes: "Keep elbows at ~30° angle from torso. Pull the weight towards your navel",
@@ -138,12 +138,12 @@ const PROGRAM = {
                 { name: "Single-Leg Leg Press (Back off)", sets: 1, reps: "10-12 per leg", rest: "~3 min", technique: "RPE 8-9", warmup: "0",
                     notes: "High and wide foot positioning, start with weaker leg",
                     subs: ["Machine Squat", "Hack Squat"] },
-                { name: "Glute-Ham Raise", sets: 1, reps: "10-12", rest: "~1.5 min", technique: "RPE 10", warmup: "1",
-                    notes: "Keep your hips straight, do Nordic ham curls if no GHR machine",
-                    subs: ["Nordic Ham Curl", "Lying Leg Curl"] },
-                { name: "A1: Roman Chair Crunch", sets: 2, reps: "12-15", rest: "0 min", technique: "Superset", warmup: "1",
-                    notes: "Don't swing your legs at the bottom, minimize momentum, tuck your knees towards your chest if lifting your legs straight out is too challenging",
-                    subs: ["Reverse Crunch", "Hanging Leg Raise"] },
+                { name: "Lying Leg Curl", sets: 1, reps: "10-12", rest: "~1.5 min", technique: "RPE 10", warmup: "1",
+                    notes: "Keep your hips pinned to the pad and curl all the way up, squeezing your hamstrings. Lower under control to a full stretch and take the set to failure.",
+                    subs: ["Seated Hamstring Curl"] },
+                { name: "A1: Cable Crunch", sets: 2, reps: "12-15", rest: "0 min", technique: "Superset", warmup: "1",
+                    notes: "Kneel with the rope beside your head and keep your hips still. Round your back as you crunch, pulling your ribs toward your pelvis.",
+                    subs: ["Machine Crunch"] },
                 { name: "A2: Seated Calf Raise", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "Superset", warmup: "1",
                     notes: "Press all the way up to your toes, stretch your calves at the bottom, don't bounce",
                     subs: ["Standing Calf Raise", "Leg Press Toe Press"] }
@@ -151,7 +151,7 @@ const PROGRAM = {
             3: [ // Push
                 { name: "Machine Chest Press", sets: 2, reps: "8-10", rest: "~2 min", technique: "RPE 9-10", warmup: "2",
                     notes: "Focus on squeezing your chest",
-                    subs: ["Weighted Dip", "Flat DB Press"] },
+                    subs: ["Smith Machine Decline Press", "Flat DB Press"] },
                 { name: "Seated DB Shoulder Press", sets: 3, reps: "10-12", rest: "~2 min", technique: "RPE 9-10", warmup: "2",
                     notes: "Bring the dumbbells all the way down, keep your torso upright",
                     subs: ["Standing DB Arnold Press", "Machine Shoulder Press"] },
@@ -174,7 +174,7 @@ const PROGRAM = {
                     subs: ["Seated Cable Row", "Pendlay Row"] },
                 { name: "Lat Pulldown", sets: 3, reps: "8-10", rest: "~2 min", technique: "Dropset", warmup: "2",
                     notes: "Think about pulling your elbows 'down' and 'in'. Last set only do a dropset: perform 8-10 reps, drop the weight by ~50%, perform an additional 8-10 reps.",
-                    subs: ["Neutral-Grip Lat Pulldown", "Weighted Pullup"] },
+                    subs: ["Neutral-Grip Lat Pulldown", "Machine Pulldown"] },
                 { name: "Reverse Pec Deck", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "Dropset", warmup: "1",
                     notes: "Swing the weight 'out', not 'back'. Last set only do a dropset: perform 12-15 reps, drop the weight by ~50%, perform an additional 12-15 reps.",
                     subs: ["Reverse Cable Flye", "Rope Facepull"] },
@@ -188,7 +188,7 @@ const PROGRAM = {
                     subs: ["Goblet Squat", "Leg Press"] },
                 { name: "DB Romanian Deadlift", sets: 2, reps: "10-12", rest: "~2 min", technique: "RPE 8-9", warmup: "2",
                     notes: "Emphasize the stretch in your hamstrings, prevent your lower back from rounding",
-                    subs: ["Romanian Deadlift", "45° Hyperextension"] },
+                    subs: ["Romanian Deadlift", "Cable Pull-Through"] },
                 { name: "Goblet Squat", sets: 1, reps: "12-15", rest: "~1.5 min", technique: "RPE 9-10", warmup: "1",
                     notes: "Hold the dumbbell underneath your chin, sit back and down, push your knees out laterally",
                     subs: ["Leg Extension", "Step-Up"] },
@@ -197,20 +197,20 @@ const PROGRAM = {
                     subs: ["Standing Calf Raise", "Seated Calf Raise"] },
                 { name: "A2: Machine Crunch", sets: 2, reps: "10-12", rest: "~1.5 min", technique: "Superset", warmup: "1",
                     notes: "Squeeze your abs to move the weight, don't use your arms to help",
-                    subs: ["Plate-Weighted Crunch", "Cable Crunch"] }
+                    subs: ["Cable Crunch"] }
             ]
         },
         3: {
             1: [ // Upper
                 { name: "Machine Chest Press (Heavy)", sets: 1, reps: "4-6", rest: "~3 min", technique: "RPE 8-9", warmup: "2-3",
                     notes: "Focus on squeezing your chest",
-                    subs: ["Flat DB Press", "Weighted Dip"] },
+                    subs: ["Flat DB Press", "Smith Machine Decline Press"] },
                 { name: "Machine Chest Press (Back off)", sets: 1, reps: "8-10", rest: "~3 min", technique: "RPE 9-10", warmup: "0",
                     notes: "Focus on squeezing your chest",
-                    subs: ["Flat DB Press", "Weighted Dip"] },
+                    subs: ["Flat DB Press", "Smith Machine Decline Press"] },
                 { name: "Machine Pulldown", sets: 2, reps: "10-12", rest: "~2 min", technique: "Dropset", warmup: "2",
                     notes: "Think about pulling your elbows 'down' and 'in'. Last set only do a dropset: perform 10-12 reps, drop the weight by ~50%, perform an additional 10-12 reps.",
-                    subs: ["2-Grip Lat Pulldown", "Weighted Pullup"] },
+                    subs: ["2-Grip Lat Pulldown", "Neutral-Grip Lat Pulldown"] },
                 { name: "Cable Shoulder Press", sets: 2, reps: "12-15", rest: "~2 min", technique: "Dropset", warmup: "1",
                     notes: "Bring cables all the way down to shoulder height, keep torso upright. Last set only do a dropset: perform 12-15 reps, drop the weight by ~50%, perform an additional 12-15 reps.",
                     subs: ["Machine Shoulder Press", "Seated DB Shoulder Press"] },
@@ -231,15 +231,15 @@ const PROGRAM = {
                 { name: "Machine Squat (Back off)", sets: 1, reps: "8-10", rest: "~3 min", technique: "RPE 8-9", warmup: "0",
                     notes: "Drop the weight back and focus on controlling the negative. Smooth and consistent rep tempo.",
                     subs: ["Hack Squat", "Leg Press"] },
-                { name: "Nordic Ham Curl", sets: 1, reps: "8-10", rest: "~1.5 min", technique: "RPE 10", warmup: "1",
-                    notes: "Keep your hips as straight as you can, can sub for lying leg curl",
-                    subs: ["Lying Leg Curl", "Glute-Ham Raise"] },
+                { name: "Lying Leg Curl", sets: 1, reps: "8-10", rest: "~1.5 min", technique: "RPE 10", warmup: "1",
+                    notes: "Take 3-4 seconds to lower every rep to keep the Nordic curl's hard negative, then curl up hard. Keep your hips pinned to the pad and go to failure.",
+                    subs: ["Seated Hamstring Curl"] },
                 { name: "A1: Seated Calf Raise", sets: 2, reps: "10-12", rest: "0 min", technique: "Superset", warmup: "1",
                     notes: "Press all the way up to your toes, stretch your calves at the bottom, don't bounce",
                     subs: ["Standing Calf Raise", "Leg Press Toe Press"] },
-                { name: "A2: Two-Arms Two-Legs Dead Bug", sets: 2, reps: "10-12", rest: "~1.5 min", technique: "Superset", warmup: "1",
-                    notes: "Perform these slowly, focus on keeping your lower back against the ground throughout the set",
-                    subs: ["Reverse Crunch", "Roman Chair Crunch"] }
+                { name: "A2: Machine Crunch", sets: 2, reps: "10-12", rest: "~1.5 min", technique: "Superset", warmup: "1",
+                    notes: "Go slow and controlled: exhale and curl your ribs toward your pelvis, pausing in the squeeze. Don't pull with your arms.",
+                    subs: ["Cable Crunch"] }
             ],
             3: [ // Push
                 { name: "Standing DB Arnold Press", sets: 2, reps: "10-12", rest: "~2 min", technique: "RPE 9-10", warmup: "2",
@@ -247,7 +247,7 @@ const PROGRAM = {
                     subs: ["Seated DB Shoulder Press", "Machine Shoulder Press"] },
                 { name: "Cable Chest Press", sets: 2, reps: "10-12", rest: "~2 min", technique: "Dropset", warmup: "2",
                     notes: "Can be performed seated or standing. Focus on squeezing your chest. Last set only do a dropset: perform 10-12 reps, drop the weight by ~50%, perform an additional 10-12 reps.",
-                    subs: ["Weighted Dip", "Flat DB Press"] },
+                    subs: ["Machine Chest Press", "Flat DB Press"] },
                 { name: "DB Triceps Kickback", sets: 2, reps: "10-12", rest: "~1.5 min", technique: "Dropset", warmup: "1",
                     notes: "Lean slightly forward, lock your elbow behind your torso (shoulder hyperextension). Last set only do a dropset: perform 10-12 reps, drop the weight by ~50%, perform an additional 10-12 reps.",
                     subs: ["Triceps Pressdown", "Cable Triceps Kickback"] },
@@ -264,7 +264,7 @@ const PROGRAM = {
                     subs: ["Cable Lat Pullover", "1-Arm Lat Pull-In"] },
                 { name: "Neutral-Grip Lat Pulldown", sets: 3, reps: "8-10", rest: "~2 min", technique: "Dropset", warmup: "2",
                     notes: "Pull your elbows down against your sides. Last set only do a dropset: perform 8-10 reps, drop the weight by ~50%, perform an additional 8-10 reps.",
-                    subs: ["Weighted Pullup", "Lat Pulldown"] },
+                    subs: ["Lat Pulldown", "Machine Pulldown"] },
                 { name: "Meadows Row", sets: 2, reps: "10-12", rest: "~2 min", technique: "RPE 9-10", warmup: "2",
                     notes: "Brace with your non-working hand against your knee, stay light, emphasize form",
                     subs: ["Single-Arm DB Row", "Pendlay Row"] },
@@ -278,7 +278,7 @@ const PROGRAM = {
             5: [ // Legs
                 { name: "Romanian Deadlift", sets: 2, reps: "10-12", rest: "~2 min", technique: "RPE 8-9", warmup: "2",
                     notes: "Maintain a neutral lower back, set your hips back, don't allow your spine to round",
-                    subs: ["DB Romanian Deadlift", "45° Hyperextension"] },
+                    subs: ["DB Romanian Deadlift", "Cable Pull-Through"] },
                 { name: "DB Walking Lunge", sets: 3, reps: "8-10", rest: "~2 min", technique: "RPE 8-9", warmup: "2",
                     notes: "Take medium strides, minimize the amount you push off your rear leg",
                     subs: ["DB Step-Up", "DB Bulgarian Split Squat"] },
@@ -288,13 +288,31 @@ const PROGRAM = {
                 { name: "A1: Standing Calf Raise", sets: 2, reps: "15-20", rest: "0 min", technique: "Superset", warmup: "1",
                     notes: "Press all the way up to your toes, stretch your calves at the bottom, don't bounce",
                     subs: ["Seated Calf Raise", "Leg Press Toe Press"] },
-                { name: "A2: Plate-Weighted Crunch", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "Superset", warmup: "1",
-                    notes: "Hold a plate or DB to your chest and crunch hard!",
-                    subs: ["Cable Crunch", "Machine Crunch"] }
+                { name: "A2: Cable Crunch", sets: 2, reps: "12-15", rest: "~1.5 min", technique: "Superset", warmup: "1",
+                    notes: "Round your back as you crunch and keep your hips still so your abs do the work. Same exercise as block 1 Legs, so aim to beat those numbers.",
+                    subs: ["Machine Crunch"] }
             ]
         }
     }
 };
+
+// ===== Replaced exercises (v3.1: bodyweight defaults swapped for machine/cable work) =====
+// On load, sets and swaps saved under `from` move to `to` in the same block and session.
+// Moved sets keep their old name as a "done as" label, unless `doneAsNew` says they were
+// really done as the new exercise. `node audit.js` checks these entries.
+const PROGRAM_CHANGES = [
+    { block: 1, session: 2, from: 'A2: Hanging Leg Raise', to: 'A2: Machine Crunch' },
+    { block: 1, session: 4, from: 'Weighted Pullup', to: 'Lat Pulldown', doneAsNew: true }, // logged here, but done as lat pulldowns
+    { block: 2, session: 1, from: '2-Grip Pullup', to: '2-Grip Lat Pulldown' },
+    { block: 2, session: 1, from: 'Weighted Dip (Heavy)', to: 'Smith Machine Decline Press (Heavy)' },
+    { block: 2, session: 1, from: 'Weighted Dip (Back off)', to: 'Smith Machine Decline Press (Back off)' },
+    { block: 2, session: 2, from: 'Glute-Ham Raise', to: 'Lying Leg Curl' },
+    { block: 2, session: 2, from: 'A1: Roman Chair Crunch', to: 'A1: Cable Crunch' },
+    { block: 3, session: 2, from: 'Nordic Ham Curl', to: 'Lying Leg Curl' },
+    { block: 3, session: 2, from: 'A2: Two-Arms Two-Legs Dead Bug', to: 'A2: Machine Crunch' },
+    { block: 3, session: 5, from: 'A2: Plate-Weighted Crunch', to: 'A2: Cable Crunch' }
+];
+
 // ===== Warm-up routine (Guide tab) =====
 // `move` points at a demo in exercises.js; ids are stored in the daily checklist.
 const WARMUP = [
