@@ -610,6 +610,7 @@ dialog { color: var(--text); }
     border-radius: 18px;
     background: #fff;
     display: grid;
+    grid-template-rows: minmax(0, 1fr); /* an auto row grows to the GIF's full size and crops it */
     place-items: center;
     overflow: hidden;
     margin-bottom: 10px;
