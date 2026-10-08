@@ -3,7 +3,7 @@
 // Data lives in program.js (PROGRAM, WARMUP) and exercises.js (EXERCISE_MEDIA).
 // All state is local to the device (localStorage) - see README "Your data".
 
-const APP_VERSION = '3.1.0';                              // keep in sync with CACHE_VERSION in sw.js
+const APP_VERSION = '3.1.1';                              // keep in sync with CACHE_VERSION in sw.js
 const STORAGE_KEY = 'nippardEssentials5x_12weeks_v1';     // never rename: holds everyone's history
 const PRE_V3_BACKUP_KEY = STORAGE_KEY + '_pre_v3';        // untouched copy of data saved by v2
 const GIF_CACHE = 'gif-cache-v1';                         // must match sw.js
@@ -2247,6 +2247,13 @@ function wireEvents() {
     });
     ['pointercancel', 'blur'].forEach((ev) => window.addEventListener(ev, stopHold));
     document.addEventListener('contextmenu', (e) => { if (e.target.closest('[data-step]')) e.preventDefault(); });
+
+    // While a number is being typed, the rows below Log are hidden (styles.css). Tapping a footer
+    // button would blur the field mid-tap, bring them back and move the button out from under the
+    // finger, so the tap was lost. Keep focus in the field during the tap, as the steppers do.
+    document.addEventListener('pointerdown', (e) => {
+        if (document.activeElement?.matches('#in-weight, #in-reps') && e.target.closest('#sx-foot [data-action]')) e.preventDefault();
+    });
 
     // Logger inputs
     document.addEventListener('input', (e) => {

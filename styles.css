@@ -1333,7 +1333,8 @@ body.has-rest-bar > .toast-host { bottom: calc(var(--nav-h) + var(--safe-bottom)
 }
 
 /* Footer on short screens: a shadow shows there is more to scroll to, and while a number is
-   being typed (keyboard open) the secondary rows step aside so Log stays in view */
+   being typed (keyboard open) the secondary rows step aside so Log stays in view. A tap on a
+   footer button keeps the field focused (app.js), so they can't jump back in mid-tap. */
 .sheet-foot {
     background:
         linear-gradient(to top, var(--bg-elev) 40%, rgb(17 20 27 / 0)) bottom / 100% 28px no-repeat local,

@@ -1,5 +1,5 @@
 // Bump CACHE_VERSION on every release (keep in sync with APP_VERSION in app.js)
-const CACHE_VERSION = 'gym-tracker-v3.1.0';
+const CACHE_VERSION = 'gym-tracker-v3.1.1';
 const GIF_CACHE = 'gif-cache-v1'; // survives app updates; must match app.js
 const GIF_HOST = 'fitnessprogramer.com';
 const GIF_CACHE_LIMIT = 220;      // ~95 demos in the catalog, plus headroom
